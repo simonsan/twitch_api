@@ -103,12 +103,16 @@ pub struct ErrorResponse {
     pub status: i32,
     pub message: String,
     #[serde(skip_deserializing)]
-    pub cause: Option<Box<Error>>
+    pub cause: Option<Box<Error>>,
 }
 
 impl fmt::Display for ErrorResponse {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "TwitchError: (Status: {}, Error: {}, Message: {})", &self.status, self.error, &self.message)
+        write!(
+            f,
+            "TwitchError: (Status: {}, Error: {}, Message: {})",
+            &self.status, self.error, &self.message
+        )
     }
 }
 
@@ -119,7 +123,7 @@ impl Error for ErrorResponse {
 
     fn cause(&self) -> Option<&Error> {
         if let Some(ref cause) = self.cause {
-            return Some(cause.as_ref())
+            return Some(cause.as_ref());
         } else {
             None
         }
@@ -157,8 +161,14 @@ macro_rules! next_result {
                     $obj.offset += r.$lst.len() as i32;
                     $obj.cur = Some(r);
                     values_exist = true;
-                },
-                Err(r) => writeln!(&mut std::io::stderr(), "{} Error: {}", stringify!($serde), r).unwrap()
+                }
+                Err(r) => writeln!(
+                    &mut std::io::stderr(),
+                    "{} Error: {}",
+                    stringify!($serde),
+                    r
+                )
+                .unwrap(),
             };
         } else {
             values_exist = true;
@@ -179,10 +189,10 @@ macro_rules! next_result {
                     $obj.cur = None;
                 }
                 x
-            },
-            false => None
+            }
+            false => None,
         }
-    }}
+    }};
 }
 
 macro_rules! next_result_cursor {
@@ -193,7 +203,7 @@ macro_rules! next_result_cursor {
             {
                 if let Some(ref cursor) = $obj.cursor {
                     if cursor.len() == 0 {
-                        return None
+                        return None;
                     } else {
                         new_url.push_str("&cursor=");
                         new_url.push_str(cursor.clone().as_str());
@@ -209,8 +219,14 @@ macro_rules! next_result_cursor {
                     }
                     $obj.cursor = r._cursor.clone();
                     $obj.cur = Some(r);
-                },
-                Err(r) => writeln!(&mut std::io::stderr(), "{} Error: {}", stringify!($serde), r).unwrap()
+                }
+                Err(r) => writeln!(
+                    &mut std::io::stderr(),
+                    "{} Error: {}",
+                    stringify!($serde),
+                    r
+                )
+                .unwrap(),
             };
         } else {
             values_exist = true;
@@ -231,8 +247,8 @@ macro_rules! next_result_cursor {
                     $obj.cur = None;
                 }
                 x
-            },
-            false => None
+            }
+            false => None,
         }
-    }}
+    }};
 }

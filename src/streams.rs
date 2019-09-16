@@ -16,22 +16,21 @@ extern crate chrono;
 extern crate serde_json;
 extern crate urlparse;
 
-use std::collections::HashMap;
 use std;
+use std::collections::HashMap;
 use std::io::Write;
 
 use self::chrono::prelude::*;
 
-use super::TwitchClient;
-use super::response::TwitchResult;
 use super::channels::Channel;
+use super::response::TwitchResult;
+use super::TwitchClient;
 
 /// Gets stream information (the stream object) for a specified user
 ///
 /// #### Authentication: `None`
 ///
-pub fn get(c: &TwitchClient, chan_id: &str)
-        -> TwitchResult<StreamByUser> {
+pub fn get(c: &TwitchClient, chan_id: &str) -> TwitchResult<StreamByUser> {
     let r = try!(c.get::<StreamByUser>(&format!("/streams/{}", chan_id)));
     Ok(r)
 }
@@ -40,23 +39,25 @@ pub fn get(c: &TwitchClient, chan_id: &str)
 ///
 /// #### Authentication: `None`
 ///
-pub fn live<'c>(c: &'c TwitchClient,
-                channel_ids: Option<&[&str]>,
-                game: Option<String>,
-                language: Option<String>)
-        -> TwitchResult<LiveStreamsIterator<'c>> {
-
+pub fn live<'c>(
+    c: &'c TwitchClient,
+    channel_ids: Option<&[&str]>,
+    game: Option<String>,
+    language: Option<String>,
+) -> TwitchResult<LiveStreamsIterator<'c>> {
     let channels = match channel_ids {
         Some(ch) => Some(ch.join(",")),
-        None     => None
+        None => None,
     };
 
-    let iter = LiveStreamsIterator { client: c,
-                                     cur: None,
-                                     channel: channels,
-                                     game: game,
-                                     language: language,
-                                     offset: 0 };
+    let iter = LiveStreamsIterator {
+        client: c,
+        cur: None,
+        channel: channels,
+        game: game,
+        language: language,
+        offset: 0,
+    };
     Ok(iter)
 }
 
@@ -64,8 +65,7 @@ pub fn live<'c>(c: &'c TwitchClient,
 ///
 /// #### Authentication: `None`
 ///
-pub fn summary(c: &TwitchClient, game: Option<&str>)
-        -> TwitchResult<Summary> {
+pub fn summary(c: &TwitchClient, game: Option<&str>) -> TwitchResult<Summary> {
     let mut url = String::from("/streams/summary");
     if let Some(game) = game {
         url.push_str("?game=");
@@ -79,9 +79,12 @@ pub fn summary(c: &TwitchClient, game: Option<&str>)
 ///
 /// #### Authentication: `None`
 ///
-pub fn featured<'c>(c: &'c TwitchClient)
-        -> TwitchResult<FeaturedIterator<'c>> {
-    let iter = FeaturedIterator { client: c, cur: None, offset: 0 };
+pub fn featured<'c>(c: &'c TwitchClient) -> TwitchResult<FeaturedIterator<'c>> {
+    let iter = FeaturedIterator {
+        client: c,
+        cur: None,
+        offset: 0,
+    };
     Ok(iter)
 }
 
@@ -90,13 +93,14 @@ pub fn featured<'c>(c: &'c TwitchClient)
 ///
 /// #### Authentication: `user_read`
 ///
-pub fn followed(c: &TwitchClient)
-        -> TwitchResult<FollowedStreams> {
+pub fn followed(c: &TwitchClient) -> TwitchResult<FollowedStreams> {
     let mut lst = Vec::new();
     let mut r = try!(c.get::<FollowedStreams>("/streams/followed?limit=100"));
     lst.append(&mut r._streams);
     while let Some(cursor) = r._cursor {
-        r = try!(c.get::<FollowedStreams>(&format!("/streams/followsed?cursor={}&limit=100", cursor)));
+        r = try!(
+            c.get::<FollowedStreams>(&format!("/streams/followsed?cursor={}&limit=100", cursor))
+        );
         lst.append(&mut r._streams);
     }
     r.streams = lst;
@@ -206,7 +210,10 @@ impl<'c> Iterator for FeaturedIterator<'c> {
 
     fn next(&mut self) -> Option<Featured> {
         if self.cur.is_none() {
-            if let Ok(r) = self.client.get::<SerdeFeaturedStreams>(&format!("/streams/featured?limit=100&offset={}", self.offset)) {
+            if let Ok(r) = self.client.get::<SerdeFeaturedStreams>(&format!(
+                "/streams/featured?limit=100&offset={}",
+                self.offset
+            )) {
                 self.offset += r.featured.len() as i32;
                 self.cur = Some(r);
             } else {
@@ -232,7 +239,7 @@ impl<'c> Iterator for FeaturedIterator<'c> {
 ///////////////////////////////////////
 #[derive(Deserialize, Debug)]
 pub struct FollowedStreams {
-    #[serde(skip_deserializing, default="Vec::new")]
+    #[serde(skip_deserializing, default = "Vec::new")]
     pub streams: Vec<Stream>,
 
     #[serde(rename = "streams")]
@@ -247,16 +254,18 @@ pub struct FollowedStreams {
 #[cfg(test)]
 mod tests {
     use super::super::new;
-    use super::super::response;
-    use super::super::tests::{CLIENTID, TOKEN, CHANID};
+    use super::super::tests::{CHANID, CLIENTID, TOKEN};
 
     #[test]
     fn get() {
         let c = new(String::from(CLIENTID));
 
         match super::get(&c, CHANID) {
-            Ok(r)  => (),
-            Err(r) => { println!("{:?}", r); assert!(false); }
+            Ok(_r) => (),
+            Err(r) => {
+                println!("{:?}", r);
+                assert!(false);
+            }
         }
     }
 
@@ -266,28 +275,43 @@ mod tests {
 
         match super::live(&c, None, None, None) {
             Ok(mut r) => assert_ne!(r.next().unwrap().id, 0),
-            Err(r)    => { println!("{:?}", r); assert!(false); }
+            Err(r) => {
+                println!("{:?}", r);
+                assert!(false);
+            }
         }
 
-        if let Some(chan) =
-            match super::live(&c, None, Some("IRL".to_owned()), None) {
-                Ok(mut r) => Some(r.next().unwrap().channel),
-                Err(r)    => { println!("{:?}", r); assert!(false); None }
-            }{
+        if let Some(chan) = match super::live(&c, None, Some("IRL".to_owned()), None) {
+            Ok(mut r) => Some(r.next().unwrap().channel),
+            Err(r) => {
+                println!("{:?}", r);
+                assert!(false);
+                None
+            }
+        } {
             assert_ne!(chan.id, 0);
 
             match super::live(&c, Some(&[&chan.id.to_string()]), None, None) {
                 Ok(mut r) => match r.next() {
                     Some(st) => assert_ne!(st.id, 0),
-                    None     => { println!("{:?}", chan); assert!(false); }
+                    None => {
+                        println!("{:?}", chan);
+                        assert!(false);
+                    }
                 },
-                Err(r)    => { println!("{:?}", r); assert!(false); }
+                Err(r) => {
+                    println!("{:?}", r);
+                    assert!(false);
+                }
             }
         }
 
         match super::live(&c, None, None, Some("en".to_owned())) {
             Ok(mut r) => assert_ne!(r.next().unwrap().id, 0),
-            Err(r)    => { println!("{:?}", r); assert!(false); }
+            Err(r) => {
+                println!("{:?}", r);
+                assert!(false);
+            }
         }
     }
 
@@ -295,14 +319,20 @@ mod tests {
     fn summary() {
         let c = new(String::from(CLIENTID));
 
-        if let Some(all_cnt) =
-            match super::summary(&c, None) {
-                Ok(r)  => r.viewers,
-                Err(r) => { println!("{:?}", r); assert!(false); None }
-            } {
+        if let Some(all_cnt) = match super::summary(&c, None) {
+            Ok(r) => r.viewers,
+            Err(r) => {
+                println!("{:?}", r);
+                assert!(false);
+                None
+            }
+        } {
             match super::summary(&c, Some("IRL")) {
-                Ok(r)  => assert!(all_cnt > r.viewers.expect("2")),
-                Err(r) => { println!("{:?}", r); assert!(false); }
+                Ok(r) => assert!(all_cnt > r.viewers.expect("2")),
+                Err(r) => {
+                    println!("{:?}", r);
+                    assert!(false);
+                }
             }
         } else {
             println!("None viewers");
@@ -315,11 +345,14 @@ mod tests {
         let c = new(String::from(CLIENTID));
 
         match super::featured(&c) {
-            Ok(mut r)  => match r.next() {
+            Ok(mut r) => match r.next() {
                 Some(st) => assert_ne!(st.stream.id, 0),
-                None     => assert!(false)
+                None => assert!(false),
             },
-            Err(r) => { println!("{:?}", r); assert!(false); }
+            Err(r) => {
+                println!("{:?}", r);
+                assert!(false);
+            }
         }
     }
 
@@ -329,8 +362,11 @@ mod tests {
         c.set_oauth_token(TOKEN);
 
         match super::followed(&c) {
-            Ok(r)  => (),
-            Err(r) => { println!("{:?}", r); assert!(false); }
+            Ok(_r) => (),
+            Err(r) => {
+                println!("{:?}", r);
+                assert!(false);
+            }
         }
     }
 }

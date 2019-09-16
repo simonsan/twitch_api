@@ -15,14 +15,14 @@
 extern crate chrono;
 extern crate serde_json;
 
-use super::TwitchClient;
 use super::response::TwitchResult;
 use super::users::User;
+use super::TwitchClient;
 
+use serde_json::Value;
 use std;
 use std::collections::HashMap;
 use std::io::Write;
-use serde_json::Value;
 
 /// Gets a specified community
 ///
@@ -32,8 +32,7 @@ use serde_json::Value;
 ///
 /// #### Authentication: `None`
 ///
-pub fn get_by_name(c: &TwitchClient, name: &str)
-        -> TwitchResult<Community> {
+pub fn get_by_name(c: &TwitchClient, name: &str) -> TwitchResult<Community> {
     let r = try!(c.get::<Community>(&format!("/communities?name={}", name)));
     Ok(r)
 }
@@ -42,8 +41,7 @@ pub fn get_by_name(c: &TwitchClient, name: &str)
 ///
 /// #### Authentication: `None`
 ///
-pub fn get_by_id(c: &TwitchClient, id: &str)
-        -> TwitchResult<Community> {
+pub fn get_by_id(c: &TwitchClient, id: &str) -> TwitchResult<Community> {
     let r = try!(c.get::<Community>(&format!("/communities/{}", id)));
     Ok(r)
 }
@@ -52,8 +50,11 @@ pub fn get_by_id(c: &TwitchClient, id: &str)
 ///
 /// #### Authentication: `communities_edit`
 ///
-pub fn update<'a>(c: &TwitchClient, community_id: &str, data: &'a UpdateSettings)
-        -> TwitchResult<Community> {
+pub fn update<'a>(
+    c: &TwitchClient,
+    community_id: &str,
+    data: &'a UpdateSettings,
+) -> TwitchResult<Community> {
     let mut settings: HashMap<String, &str> = HashMap::new();
     if let Some(summary) = data.summary {
         settings.insert("summary".to_owned(), summary);
@@ -67,7 +68,10 @@ pub fn update<'a>(c: &TwitchClient, community_id: &str, data: &'a UpdateSettings
     if let Some(email) = data.email {
         settings.insert("email".to_owned(), email);
     }
-    let r = try!(c.put::<HashMap<String, &str>, Community>(&format!("/communities/{}", community_id), &settings));
+    let r = try!(c.put::<HashMap<String, &str>, Community>(
+        &format!("/communities/{}", community_id),
+        &settings
+    ));
     Ok(r)
 }
 
@@ -75,12 +79,13 @@ pub fn update<'a>(c: &TwitchClient, community_id: &str, data: &'a UpdateSettings
 ///
 /// #### Authentication: `communities_moderate`
 ///
-pub fn bans<'c>(c: &'c TwitchClient, community_id: &str)
-        -> TwitchResult<CommunityBanIterator<'c>> {
-    let iter = CommunityBanIterator { client: c,
-                                      community_id: String::from(community_id),
-                                      cur: None,
-                                      cursor: None };
+pub fn bans<'c>(c: &'c TwitchClient, community_id: &str) -> TwitchResult<CommunityBanIterator<'c>> {
+    let iter = CommunityBanIterator {
+        client: c,
+        community_id: String::from(community_id),
+        cur: None,
+        cursor: None,
+    };
     Ok(iter)
 }
 
@@ -88,9 +93,11 @@ pub fn bans<'c>(c: &'c TwitchClient, community_id: &str)
 ///
 /// #### Authentication: `communities_moderate`
 ///
-pub fn ban(c: &TwitchClient, community_id: &str, user_id: &str)
-        -> TwitchResult<Value> {
-    let r = try!(c.put::<Value, Value>(&format!("/communities/{}/bans/{}", community_id, user_id), &Value::Null));
+pub fn ban(c: &TwitchClient, community_id: &str, user_id: &str) -> TwitchResult<Value> {
+    let r = try!(c.put::<Value, Value>(
+        &format!("/communities/{}/bans/{}", community_id, user_id),
+        &Value::Null
+    ));
     Ok(r)
 }
 
@@ -98,8 +105,7 @@ pub fn ban(c: &TwitchClient, community_id: &str, user_id: &str)
 ///
 /// #### Authentication: `communities_moderate`
 ///
-pub fn unban(c: &TwitchClient, community_id: &str, user_id: &str)
-        -> TwitchResult<Value> {
+pub fn unban(c: &TwitchClient, community_id: &str, user_id: &str) -> TwitchResult<Value> {
     let r = try!(c.delete::<Value>(&format!("/communities/{}/bans/{}", community_id, user_id)));
     Ok(r)
 }
@@ -108,11 +114,17 @@ pub fn unban(c: &TwitchClient, community_id: &str, user_id: &str)
 ///
 /// #### Authentication: `communities_edit`
 ///
-pub fn set_avatar_image(c: &TwitchClient, community_id: &str, avatar_img: &str)
-        -> TwitchResult<Value> {
+pub fn set_avatar_image(
+    c: &TwitchClient,
+    community_id: &str,
+    avatar_img: &str,
+) -> TwitchResult<Value> {
     let mut data: HashMap<String, &str> = HashMap::new();
     data.insert("avatar_image".to_owned(), avatar_img);
-    let r = try!(c.post::<HashMap<String, &str>, Value>(&format!("/communities/{}/images/avatar", community_id), &data));
+    let r = try!(c.post::<HashMap<String, &str>, Value>(
+        &format!("/communities/{}/images/avatar", community_id),
+        &data
+    ));
     Ok(r)
 }
 
@@ -120,8 +132,7 @@ pub fn set_avatar_image(c: &TwitchClient, community_id: &str, avatar_img: &str)
 ///
 /// #### Authentication: `communities_edit`
 ///
-pub fn delete_avatar_image(c: &TwitchClient, community_id: &str)
-        -> TwitchResult<Value> {
+pub fn delete_avatar_image(c: &TwitchClient, community_id: &str) -> TwitchResult<Value> {
     let r = try!(c.delete::<Value>(&format!("/communities/{}/images/avatar", community_id)));
     Ok(r)
 }
@@ -130,11 +141,17 @@ pub fn delete_avatar_image(c: &TwitchClient, community_id: &str)
 ///
 /// #### Authentication: `communities_edit`
 ///
-pub fn set_cover_image(c: &TwitchClient, community_id: &str, cover_img: &str)
-        -> TwitchResult<Value> {
+pub fn set_cover_image(
+    c: &TwitchClient,
+    community_id: &str,
+    cover_img: &str,
+) -> TwitchResult<Value> {
     let mut data: HashMap<String, &str> = HashMap::new();
     data.insert("cover_image".to_owned(), cover_img);
-    let r = try!(c.post::<HashMap<String, &str>, Value>(&format!("/communities/{}/images/cover", community_id), &data));
+    let r = try!(c.post::<HashMap<String, &str>, Value>(
+        &format!("/communities/{}/images/cover", community_id),
+        &data
+    ));
     Ok(r)
 }
 
@@ -142,8 +159,7 @@ pub fn set_cover_image(c: &TwitchClient, community_id: &str, cover_img: &str)
 ///
 /// #### Authentication: `communities_edit`
 ///
-pub fn delete_cover_image(c: &TwitchClient, community_id: &str)
-        -> TwitchResult<Value> {
+pub fn delete_cover_image(c: &TwitchClient, community_id: &str) -> TwitchResult<Value> {
     let r = try!(c.delete::<Value>(&format!("/communities/{}/images/cover", community_id)));
     Ok(r)
 }
@@ -152,8 +168,7 @@ pub fn delete_cover_image(c: &TwitchClient, community_id: &str)
 ///
 /// #### Authentication: `communities_edit`
 ///
-pub fn moderators(c: &TwitchClient, community_id: &str)
-        -> TwitchResult<Moderators> {
+pub fn moderators(c: &TwitchClient, community_id: &str) -> TwitchResult<Moderators> {
     let r = try!(c.get::<Moderators>(&format!("/communities/{}/moderators", community_id)));
     Ok(r)
 }
@@ -162,9 +177,11 @@ pub fn moderators(c: &TwitchClient, community_id: &str)
 ///
 /// #### Authentication: `communities_edit`
 ///
-pub fn new_moderator(c: &TwitchClient, community_id: &str, user_id: &str)
-        -> TwitchResult<Value> {
-    let r = try!(c.put::<Value, Value>(&format!("/communities/{}/moderators/{}", community_id, user_id), &Value::Null));
+pub fn new_moderator(c: &TwitchClient, community_id: &str, user_id: &str) -> TwitchResult<Value> {
+    let r = try!(c.put::<Value, Value>(
+        &format!("/communities/{}/moderators/{}", community_id, user_id),
+        &Value::Null
+    ));
     Ok(r)
 }
 
@@ -172,9 +189,15 @@ pub fn new_moderator(c: &TwitchClient, community_id: &str, user_id: &str)
 ///
 /// #### Authentication: `communities_edit`
 ///
-pub fn delete_moderator(c: &TwitchClient, community_id: &str, user_id: &str)
-        -> TwitchResult<Value> {
-    let r = try!(c.delete::<Value>(&format!("/communities/{}/moderators/{}", community_id, user_id)));
+pub fn delete_moderator(
+    c: &TwitchClient,
+    community_id: &str,
+    user_id: &str,
+) -> TwitchResult<Value> {
+    let r = try!(c.delete::<Value>(&format!(
+        "/communities/{}/moderators/{}",
+        community_id, user_id
+    )));
     Ok(r)
 }
 
@@ -182,9 +205,9 @@ pub fn delete_moderator(c: &TwitchClient, community_id: &str, user_id: &str)
 ///
 /// #### Authentication: `Any`
 ///
-pub fn permissions(c: &TwitchClient, community_id: &str)
-        -> TwitchResult<HashMap<String, bool>> {
-    let r = try!(c.get::<HashMap<String, bool>>(&format!("/communities/{}/permissions", community_id)));
+pub fn permissions(c: &TwitchClient, community_id: &str) -> TwitchResult<HashMap<String, bool>> {
+    let r =
+        try!(c.get::<HashMap<String, bool>>(&format!("/communities/{}/permissions", community_id)));
     Ok(r)
 }
 
@@ -192,11 +215,17 @@ pub fn permissions(c: &TwitchClient, community_id: &str)
 ///
 /// #### Authentication: `None`
 ///
-pub fn report_channel(c: &TwitchClient, community_id: &str, channel_id: &str)
-        -> TwitchResult<Value> {
+pub fn report_channel(
+    c: &TwitchClient,
+    community_id: &str,
+    channel_id: &str,
+) -> TwitchResult<Value> {
     let mut data: HashMap<String, &str> = HashMap::new();
     data.insert("channel_id".to_owned(), channel_id);
-    let r = try!(c.post::<HashMap<String, &str>, Value>(&format!("/communities/{}/report_channel", community_id), &data));
+    let r = try!(c.post::<HashMap<String, &str>, Value>(
+        &format!("/communities/{}/report_channel", community_id),
+        &data
+    ));
     Ok(r)
 }
 
@@ -204,12 +233,13 @@ pub fn report_channel(c: &TwitchClient, community_id: &str, channel_id: &str)
 ///
 /// #### Authentication: `communities_moderate`
 ///
-pub fn timeouts<'c>(c: &'c TwitchClient, community_id: &str)
-        -> TwitchResult<TimeoutIterator<'c>> {
-    let iter = TimeoutIterator { client: c,
-                                 community_id: String::from(community_id),
-                                 cur: None,
-                                 cursor: None };
+pub fn timeouts<'c>(c: &'c TwitchClient, community_id: &str) -> TwitchResult<TimeoutIterator<'c>> {
+    let iter = TimeoutIterator {
+        client: c,
+        community_id: String::from(community_id),
+        cur: None,
+        cursor: None,
+    };
     Ok(iter)
 }
 
@@ -217,14 +247,22 @@ pub fn timeouts<'c>(c: &'c TwitchClient, community_id: &str)
 ///
 /// #### Authentication: `communities_moderate`
 ///
-pub fn timeout(c: &TwitchClient, community_id: &str, user_id: &str, duration: i32, reason: Option<String>)
-        -> TwitchResult<Value> {
+pub fn timeout(
+    c: &TwitchClient,
+    community_id: &str,
+    user_id: &str,
+    duration: i32,
+    reason: Option<String>,
+) -> TwitchResult<Value> {
     let mut data: HashMap<String, String> = HashMap::new();
     data.insert("duration".to_owned(), duration.to_string());
     if let Some(reason) = reason {
         data.insert("reason".to_owned(), reason);
     }
-    let r = try!(c.put::<HashMap<String, String>, Value>(&format!("/communities/{}/timeouts/{}", community_id, user_id), &data));
+    let r = try!(c.put::<HashMap<String, String>, Value>(
+        &format!("/communities/{}/timeouts/{}", community_id, user_id),
+        &data
+    ));
     Ok(r)
 }
 
@@ -232,9 +270,11 @@ pub fn timeout(c: &TwitchClient, community_id: &str, user_id: &str, duration: i3
 ///
 /// #### Authentication: `communities_moderate`
 ///
-pub fn delete_timeout(c: &TwitchClient, community_id: &str, user_id: &str)
-        -> TwitchResult<Value> {
-    let r = try!(c.delete::<Value>(&format!("/communities/{}/timeouts/{}", community_id, user_id)));
+pub fn delete_timeout(c: &TwitchClient, community_id: &str, user_id: &str) -> TwitchResult<Value> {
+    let r = try!(c.delete::<Value>(&format!(
+        "/communities/{}/timeouts/{}",
+        community_id, user_id
+    )));
     Ok(r)
 }
 
@@ -242,11 +282,12 @@ pub fn delete_timeout(c: &TwitchClient, community_id: &str, user_id: &str)
 ///
 /// #### Authentication: `None`
 ///
-pub fn top<'c>(c: &'c TwitchClient)
-        -> TwitchResult<TopCommunities<'c>> {
-    let iter = TopCommunities { client: c,
-                                cur: None,
-                                cursor: None };
+pub fn top<'c>(c: &'c TwitchClient) -> TwitchResult<TopCommunities<'c>> {
+    let iter = TopCommunities {
+        client: c,
+        cur: None,
+        cursor: None,
+    };
     Ok(iter)
 }
 

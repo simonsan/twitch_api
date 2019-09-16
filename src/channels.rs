@@ -17,23 +17,22 @@ extern crate serde_json;
 
 use self::chrono::prelude::*;
 
-use super::TwitchClient;
-use super::response::TwitchResult;
 use super::communities::Community;
+use super::response::TwitchResult;
 use super::users::User;
 use super::videos::Video;
+use super::TwitchClient;
 
-use std::collections::HashMap;
-use std;
-use std::io::Write;
 use serde_json::Value;
+use std;
+use std::collections::HashMap;
+use std::io::Write;
 
 /// Gets a channel object based on a specified OAuth token
 ///
 /// #### Authentication: `channel_read`
 ///
-pub fn get(c: &TwitchClient)
-        -> TwitchResult<Channel> {
+pub fn get(c: &TwitchClient) -> TwitchResult<Channel> {
     let r = try!(c.get::<Channel>("/channel"));
     Ok(r)
 }
@@ -42,8 +41,7 @@ pub fn get(c: &TwitchClient)
 ///
 /// #### Authentication: `None`
 ///
-pub fn get_by_id(c: &TwitchClient, chan_id: &str)
-        -> TwitchResult<Channel> {
+pub fn get_by_id(c: &TwitchClient, chan_id: &str) -> TwitchResult<Channel> {
     let r = try!(c.get::<Channel>(&format!("/channels/{}", chan_id)));
     Ok(r)
 }
@@ -52,8 +50,7 @@ pub fn get_by_id(c: &TwitchClient, chan_id: &str)
 ///
 /// #### Authentication: `channel_read`
 ///
-pub fn editors(c: &TwitchClient, chan_id: &str)
-        -> TwitchResult<ChannelEditors> {
+pub fn editors(c: &TwitchClient, chan_id: &str) -> TwitchResult<ChannelEditors> {
     let r = try!(c.get::<ChannelEditors>(&format!("/channels/{}/editors", chan_id)));
     Ok(r)
 }
@@ -64,13 +61,18 @@ pub fn editors(c: &TwitchClient, chan_id: &str)
 ///
 /// #### Authentication: `None`
 ///
-pub fn followers(c: &TwitchClient, chan_id: &str)
-        -> TwitchResult<ChannelFollowers> {
-    let mut followers = ChannelFollowers { follows: Vec::new() };
-    let mut r = try!(c.get::<SerdeChannelFollowers>(&format!("/channels/{}/follows?limit=100", chan_id)));
+pub fn followers(c: &TwitchClient, chan_id: &str) -> TwitchResult<ChannelFollowers> {
+    let mut followers = ChannelFollowers {
+        follows: Vec::new(),
+    };
+    let mut r =
+        try!(c.get::<SerdeChannelFollowers>(&format!("/channels/{}/follows?limit=100", chan_id)));
     followers.follows.append(&mut r.follows);
     while let Some(cursor) = r.cursor {
-        r = try!(c.get::<SerdeChannelFollowers>(&format!("/channels/{}/follows?cursor={}&limit=100", chan_id, cursor)));
+        r = try!(c.get::<SerdeChannelFollowers>(&format!(
+            "/channels/{}/follows?cursor={}&limit=100",
+            chan_id, cursor
+        )));
         followers.follows.append(&mut r.follows);
     }
     Ok(followers)
@@ -80,8 +82,7 @@ pub fn followers(c: &TwitchClient, chan_id: &str)
 ///
 /// #### Authentication: `None`
 ///
-pub fn teams(c: &TwitchClient, chan_id: &str)
-        -> TwitchResult<ChannelTeams> {
+pub fn teams(c: &TwitchClient, chan_id: &str) -> TwitchResult<ChannelTeams> {
     let r = try!(c.get::<ChannelTeams>(&format!("/channels/{}/teams", chan_id)));
     Ok(r)
 }
@@ -91,14 +92,19 @@ pub fn teams(c: &TwitchClient, chan_id: &str)
 ///
 /// #### Authentication: `channel_subscriptions`
 ///
-pub fn subscribers(c: &TwitchClient, chan_id: &str)
-        -> TwitchResult<ChannelSubscribers> {
+pub fn subscribers(c: &TwitchClient, chan_id: &str) -> TwitchResult<ChannelSubscribers> {
     let mut subs = Vec::new();
-    let mut r = try!(c.get::<ChannelSubscribers>(&format!("/channels/{}/subscriptions?limit=100", chan_id)));
+    let mut r = try!(
+        c.get::<ChannelSubscribers>(&format!("/channels/{}/subscriptions?limit=100", chan_id))
+    );
     let mut cnt = r._subscriptions.len();
     subs.append(&mut r._subscriptions);
     while cnt > 0 {
-        r = try!(c.get::<ChannelSubscribers>(&format!("/channels/{}/subscriptions?offset={}&limit=100", chan_id, subs.len())));
+        r = try!(c.get::<ChannelSubscribers>(&format!(
+            "/channels/{}/subscriptions?offset={}&limit=100",
+            chan_id,
+            subs.len()
+        )));
         cnt = r._subscriptions.len();
         if cnt > 0 {
             subs.append(&mut r._subscriptions);
@@ -117,9 +123,14 @@ pub fn subscribers(c: &TwitchClient, chan_id: &str)
 ///
 /// #### Authentication: `channel_check_subscription`
 ///
-pub fn subscription(c: &TwitchClient, chan_id: &str, user_id: &str)
-        -> TwitchResult<ChannelSubscription> {
-    let r = try!(c.get::<ChannelSubscription>(&format!("/channels/{}/subscriptions/{}", chan_id, user_id)));
+pub fn subscription(
+    c: &TwitchClient,
+    chan_id: &str,
+    user_id: &str,
+) -> TwitchResult<ChannelSubscription> {
+    let r = try!(
+        c.get::<ChannelSubscription>(&format!("/channels/{}/subscriptions/{}", chan_id, user_id))
+    );
     Ok(r)
 }
 
@@ -127,12 +138,13 @@ pub fn subscription(c: &TwitchClient, chan_id: &str, user_id: &str)
 ///
 /// #### Authentication: `None`
 ///
-pub fn videos<'c>(c: &'c TwitchClient, chan_id: &str)
-        -> TwitchResult<VideosIterator<'c>> {
-    let iter = VideosIterator { client: c,
-                                chan_id: String::from(chan_id),
-                                cur: None,
-                                offset: 0 };
+pub fn videos<'c>(c: &'c TwitchClient, chan_id: &str) -> TwitchResult<VideosIterator<'c>> {
+    let iter = VideosIterator {
+        client: c,
+        chan_id: String::from(chan_id),
+        cur: None,
+        offset: 0,
+    };
     Ok(iter)
 }
 
@@ -140,8 +152,7 @@ pub fn videos<'c>(c: &'c TwitchClient, chan_id: &str)
 ///
 /// #### Authentication: `channel_editor`
 ///
-pub fn community(c: &TwitchClient, chan_id: &str)
-        -> TwitchResult<Community> {
+pub fn community(c: &TwitchClient, chan_id: &str) -> TwitchResult<Community> {
     let r = try!(c.get::<Community>(&format!("/channels/{}/community", chan_id)));
     Ok(r)
 }
@@ -150,9 +161,11 @@ pub fn community(c: &TwitchClient, chan_id: &str)
 ///
 /// #### Authentication: `channel_editor`
 ///
-pub fn set_community(c: &TwitchClient, chan_id: &str, community_id: &str)
-        -> TwitchResult<Channel> {
-    let r = try!(c.put::<Value, Channel>(&format!("/channels/{}/community/{}", chan_id, community_id), &Value::Null));
+pub fn set_community(c: &TwitchClient, chan_id: &str, community_id: &str) -> TwitchResult<Channel> {
+    let r = try!(c.put::<Value, Channel>(
+        &format!("/channels/{}/community/{}", chan_id, community_id),
+        &Value::Null
+    ));
     Ok(r)
 }
 
@@ -162,8 +175,11 @@ pub fn set_community(c: &TwitchClient, chan_id: &str, community_id: &str)
 /// * To update `delay` or `channel_feed_enabled` parameter: a `channel_editor` token from the channel owner
 /// * To update other parameters: `channel_editor`
 ///
-pub fn update<'a>(c: &TwitchClient, chan_id: &str, data: &'a UpdateSettings)
-        -> TwitchResult<Channel> {
+pub fn update<'a>(
+    c: &TwitchClient,
+    chan_id: &str,
+    data: &'a UpdateSettings,
+) -> TwitchResult<Channel> {
     let mut channel: HashMap<String, &str> = HashMap::new();
     if let Some(status) = data.status {
         channel.insert("status".to_owned(), status);
@@ -179,7 +195,10 @@ pub fn update<'a>(c: &TwitchClient, chan_id: &str, data: &'a UpdateSettings)
     }
     let mut settings: HashMap<String, HashMap<String, &str>> = HashMap::new();
     settings.insert("channel".to_owned(), channel);
-    let r = try!(c.put::<HashMap<String, HashMap<String, &str>>, Channel>(&format!("/channels/{}", chan_id), &settings));
+    let r = try!(c.put::<HashMap<String, HashMap<String, &str>>, Channel>(
+        &format!("/channels/{}", chan_id),
+        &settings
+    ));
     Ok(r)
 }
 
@@ -200,9 +219,15 @@ pub fn update<'a>(c: &TwitchClient, chan_id: &str, data: &'a UpdateSettings)
 ///
 /// #### Authentication: `channel_commercial`
 ///
-pub fn commercial(c: &TwitchClient, chan_id: &str, duration: i32)
-        -> TwitchResult<CommercialResponse> {
-    let r = try!(c.post::<CommercialDuration, CommercialResponse>(&format!("/channels/{}/commercial", chan_id), &CommercialDuration { duration: duration }));
+pub fn commercial(
+    c: &TwitchClient,
+    chan_id: &str,
+    duration: i32,
+) -> TwitchResult<CommercialResponse> {
+    let r = try!(c.post::<CommercialDuration, CommercialResponse>(
+        &format!("/channels/{}/commercial", chan_id),
+        &CommercialDuration { duration: duration }
+    ));
     Ok(r)
 }
 
@@ -216,8 +241,7 @@ pub fn commercial(c: &TwitchClient, chan_id: &str, duration: i32)
 ///
 /// #### Authentication: `channel_stream`
 ///
-pub fn reset_stream_key(c: &TwitchClient, chan_id: &str)
-        -> TwitchResult<Channel> {
+pub fn reset_stream_key(c: &TwitchClient, chan_id: &str) -> TwitchResult<Channel> {
     let r = try!(c.delete::<Channel>(&format!("/channels/{}/stream_key", chan_id)));
     Ok(r)
 }
@@ -309,7 +333,7 @@ pub struct ChannelTeam {
 
 #[derive(Deserialize, Debug)]
 pub struct ChannelSubscribers {
-    #[serde(skip_deserializing, default="Vec::new")]
+    #[serde(skip_deserializing, default = "Vec::new")]
     pub subscriptions: Vec<ChannelSubscription>,
 
     #[serde(rename(deserialize = "subscriptions"))]
@@ -364,7 +388,10 @@ impl<'c> Iterator for VideosIterator<'c> {
     type Item = Video;
 
     fn next(&mut self) -> Option<Video> {
-        let url = &format!("/channels/{}/videos?limit=100&offset={}", &self.chan_id, self.offset);
+        let url = &format!(
+            "/channels/{}/videos?limit=100&offset={}",
+            &self.chan_id, self.offset
+        );
         next_result!(self, &url, SerdeChannelVideos, videos)
     }
 }
@@ -377,7 +404,7 @@ impl<'c> Iterator for VideosIterator<'c> {
 mod tests {
     use super::super::new;
     use super::super::response::ApiError;
-    use super::super::tests::{CLIENTID, TOKEN, CHANID};
+    use super::super::tests::{CHANID, CLIENTID, TOKEN};
 
     #[test]
     fn get() {
@@ -385,17 +412,24 @@ mod tests {
         c.set_oauth_token(TOKEN);
 
         match super::get(&c) {
-            Ok(r)  => assert_eq!(&r.id.to_string(), CHANID),
-            Err(r) => { println!("{:?}", r); assert!(false); }
+            Ok(r) => assert_eq!(&r.id.to_string(), CHANID),
+            Err(r) => {
+                println!("{:?}", r);
+                assert!(false);
+            }
         }
     }
 
+    #[test]
     fn get_by_id() {
         let mut c = new(String::from(CLIENTID));
 
         match super::get_by_id(&c, CHANID) {
-            Ok(r)  => assert_eq!(&r.id.to_string(), CHANID),
-            Err(r) => { println!("{:?}", r); assert!(false); }
+            Ok(r) => assert_eq!(&r.id.to_string(), CHANID),
+            Err(r) => {
+                println!("{:?}", r);
+                assert!(false);
+            }
         }
     }
 
@@ -405,8 +439,11 @@ mod tests {
         c.set_oauth_token(TOKEN);
 
         match super::editors(&c, CHANID) {
-            Ok(r)  => assert_eq!(&r.users[0].name, "rust_api_test_editor"),
-            Err(r) => { println!("{:?}", r); assert!(false); }
+            Ok(r) => assert_eq!(&r.users[0].name, "rust_api_test_editor"),
+            Err(r) => {
+                println!("{:?}", r);
+                assert!(false);
+            }
         }
     }
 
@@ -414,8 +451,11 @@ mod tests {
     fn followers() {
         let c = new(String::from(CLIENTID));
         match super::followers(&c, CHANID) {
-            Ok(r)  => assert_eq!(&r.follows[0].user.name, "rust_api_test_editor"),
-            Err(r) => { println!("{:?}", r); assert!(false); }
+            Ok(r) => assert_eq!(&r.follows[0].user.name, "rust_api_test_editor"),
+            Err(r) => {
+                println!("{:?}", r);
+                assert!(false);
+            }
         }
     }
 
@@ -423,8 +463,11 @@ mod tests {
     fn teams() {
         let c = new(String::from(CLIENTID));
         match super::teams(&c, CHANID) {
-            Ok(r)  => assert_eq!(r.teams.len(), 0),
-            Err(r) => { println!("{:?}", r); assert!(false); }
+            Ok(r) => assert_eq!(r.teams.len(), 0),
+            Err(r) => {
+                println!("{:?}", r);
+                assert!(false);
+            }
         }
     }
 
@@ -434,11 +477,14 @@ mod tests {
         c.set_oauth_token(TOKEN);
 
         match super::subscribers(&c, CHANID) {
-            Ok(r)  => (),
+            Ok(_r) => (),
             Err(r) => match r {
                 ApiError::TwitchError(e) => assert_eq!(e.status, 422),
-                _ => { println!("{:?}", r); assert!(false) }
-            }
+                _ => {
+                    println!("{:?}", r);
+                    assert!(false)
+                }
+            },
         }
     }
 
@@ -446,11 +492,14 @@ mod tests {
     fn subscription() {
         let c = new(String::from(CLIENTID));
         match super::subscription(&c, CHANID, CHANID) {
-            Ok(r)  => (),
+            Ok(_r) => (),
             Err(r) => match r {
                 ApiError::TwitchError(e) => assert_eq!(e.status, 401),
-                _ => { println!("{:?}", r); assert!(false); }
-            }
+                _ => {
+                    println!("{:?}", r);
+                    assert!(false);
+                }
+            },
         }
     }
 
@@ -459,7 +508,10 @@ mod tests {
         let c = new(String::from(CLIENTID));
         match super::videos(&c, CHANID) {
             Ok(mut r) => assert_eq!(r.next().unwrap().id, "v131643674"),
-            Err(r)    => { println!("{:?}", r); assert!(false); }
+            Err(r) => {
+                println!("{:?}", r);
+                assert!(false);
+            }
         }
     }
 }

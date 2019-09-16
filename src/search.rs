@@ -21,11 +21,11 @@ use std::io::Write;
 
 use self::urlparse::quote;
 
-use super::TwitchClient;
-use super::response::TwitchResult;
 use super::channels::Channel;
 use super::games::Game;
+use super::response::TwitchResult;
 use super::streams::Stream;
+use super::TwitchClient;
 
 /// Searches for channels based on a specified query parameter
 ///
@@ -35,12 +35,13 @@ use super::streams::Stream;
 ///
 /// #### Authentication: `None`
 ///
-pub fn channels<'c>(c: &'c TwitchClient, query: &str)
-        -> TwitchResult<SearchChannelIterator<'c>> {
-    let iter = SearchChannelIterator { client: c,
-                                       query: quote(query, b"").ok().unwrap(),
-                                       cur: None,
-                                       offset: 0 };
+pub fn channels<'c>(c: &'c TwitchClient, query: &str) -> TwitchResult<SearchChannelIterator<'c>> {
+    let iter = SearchChannelIterator {
+        client: c,
+        query: quote(query, b"").ok().unwrap(),
+        cur: None,
+        offset: 0,
+    };
     Ok(iter)
 }
 
@@ -51,13 +52,18 @@ pub fn channels<'c>(c: &'c TwitchClient, query: &str)
 ///
 /// #### Authentication: `None`
 ///
-pub fn games<'c>(c: &'c TwitchClient, query: &str, live_only: bool)
-        -> TwitchResult<SearchGameIterator<'c>> {
-    let iter = SearchGameIterator { client: c,
-                                    query: quote(query, b"").ok().unwrap(),
-                                    live_only: live_only,
-                                    cur: None,
-                                    offset: 0 };
+pub fn games<'c>(
+    c: &'c TwitchClient,
+    query: &str,
+    live_only: bool,
+) -> TwitchResult<SearchGameIterator<'c>> {
+    let iter = SearchGameIterator {
+        client: c,
+        query: quote(query, b"").ok().unwrap(),
+        live_only: live_only,
+        cur: None,
+        offset: 0,
+    };
     Ok(iter)
 }
 
@@ -69,13 +75,18 @@ pub fn games<'c>(c: &'c TwitchClient, query: &str, live_only: bool)
 ///
 /// #### Authentication: `None`
 ///
-pub fn streams<'c>(c: &'c TwitchClient, query: &str, protocol: Option<Protocol>)
-        -> TwitchResult<SearchStreamIterator<'c>> {
-    let iter = SearchStreamIterator { client: c,
-                               query: quote(query, b"").ok().unwrap(),
-                               protocol: protocol,
-                               cur: None,
-                               offset: 0 };
+pub fn streams<'c>(
+    c: &'c TwitchClient,
+    query: &str,
+    protocol: Option<Protocol>,
+) -> TwitchResult<SearchStreamIterator<'c>> {
+    let iter = SearchStreamIterator {
+        client: c,
+        query: quote(query, b"").ok().unwrap(),
+        protocol: protocol,
+        cur: None,
+        offset: 0,
+    };
     Ok(iter)
 }
 
@@ -99,7 +110,10 @@ impl<'c> Iterator for SearchChannelIterator<'c> {
     type Item = Channel;
 
     fn next(&mut self) -> Option<Channel> {
-        let url = &format!("/search/channels?query={}&limit=100&offset={}", self.query, self.offset);
+        let url = &format!(
+            "/search/channels?query={}&limit=100&offset={}",
+            self.query, self.offset
+        );
         next_result!(self, &url, SerdeSearchChannels, channels)
     }
 }
@@ -124,7 +138,10 @@ impl<'c> Iterator for SearchGameIterator<'c> {
     type Item = Game;
 
     fn next(&mut self) -> Option<Game> {
-        let url = &format!("/search/games?query={}&live={}&limit=100&offset={}", self.query, self.live_only, self.offset);
+        let url = &format!(
+            "/search/games?query={}&live={}&limit=100&offset={}",
+            self.query, self.live_only, self.offset
+        );
         next_result!(self, &url, SerdeSearchGames, games)
     }
 }
@@ -154,10 +171,13 @@ impl<'c> Iterator for SearchStreamIterator<'c> {
     type Item = Stream;
 
     fn next(&mut self) -> Option<Stream> {
-        let mut path = String::from(format!("/search/streams?query={}&limit=100&offset={}", self.query, self.offset));
+        let mut path = String::from(format!(
+            "/search/streams?query={}&limit=100&offset={}",
+            self.query, self.offset
+        ));
         path = match self.protocol {
-            Some(Protocol::HLS)  => path+"&hls=true",
-            Some(Protocol::RTMP) => path+"&hls=false",
+            Some(Protocol::HLS) => path + "&hls=true",
+            Some(Protocol::RTMP) => path + "&hls=false",
             None => path,
         };
         next_result!(self, &path, SerdeSearchStreams, streams)
@@ -178,8 +198,11 @@ mod tests {
         let c = new(String::from(CLIENTID));
 
         match super::channels(&c, "twitch") {
-            Ok(mut r)  => assert_ne!(r.next().unwrap().id, 0),
-            Err(r) => { println!("{:?}", r); assert!(false); }
+            Ok(mut r) => assert_ne!(r.next().unwrap().id, 0),
+            Err(r) => {
+                println!("{:?}", r);
+                assert!(false);
+            }
         }
     }
 
@@ -188,8 +211,11 @@ mod tests {
         let c = new(String::from(CLIENTID));
 
         match super::games(&c, "league", false) {
-            Ok(mut r)  => assert_ne!(r.next().unwrap().id, 0),
-            Err(r) => { println!("{:?}", r); assert!(false); }
+            Ok(mut r) => assert_ne!(r.next().unwrap().id, 0),
+            Err(r) => {
+                println!("{:?}", r);
+                assert!(false);
+            }
         }
     }
 
@@ -198,8 +224,11 @@ mod tests {
         let c = new(String::from(CLIENTID));
 
         match super::streams(&c, "twitch", None) {
-            Ok(mut r)  => assert_ne!(r.next().unwrap().id, 0),
-            Err(r) => { println!("{:?}", r); assert!(false); }
+            Ok(mut r) => assert_ne!(r.next().unwrap().id, 0),
+            Err(r) => {
+                println!("{:?}", r);
+                assert!(false);
+            }
         }
     }
 }

@@ -15,9 +15,8 @@
 extern crate chrono;
 extern crate serde_json;
 
-use super::TwitchClient;
 use super::response::TwitchResult;
-
+use super::TwitchClient;
 
 /// Gets a list of Twitch ingest servers
 ///
@@ -28,8 +27,7 @@ use super::response::TwitchResult;
 ///
 /// #### Authentication: `None`
 ///
-pub fn servers(c: &TwitchClient)
-        -> TwitchResult<IngestServerList> {
+pub fn servers(c: &TwitchClient) -> TwitchResult<IngestServerList> {
     let r = try!(c.get::<IngestServerList>("/ingests"));
     Ok(r)
 }
@@ -58,15 +56,17 @@ pub struct IngestServer {
 #[cfg(test)]
 mod tests {
     use super::super::new;
-    use super::super::response;
     use super::super::tests::CLIENTID;
 
     #[test]
     fn servers() {
         let c = new(String::from(CLIENTID));
         match super::servers(&c) {
-            Ok(r)  => assert!(r.ingests.len() > 0),
-            Err(r) => { println!("{:?}", r); assert!(false); },
+            Ok(r) => assert!(r.ingests.len() > 0),
+            Err(r) => {
+                println!("{:?}", r);
+                assert!(false);
+            }
         }
     }
 }

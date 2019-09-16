@@ -17,14 +17,14 @@ extern crate serde_json;
 
 use self::chrono::prelude::*;
 
-use super::TwitchClient;
 use super::response::TwitchResult;
 use super::users::User;
+use super::TwitchClient;
 
-use std::collections::HashMap;
-use std;
-use std::io::Write;
 use serde_json::Value;
+use std;
+use std::collections::HashMap;
+use std::io::Write;
 
 /// Gets a specified post from a specified channel feed
 ///
@@ -34,8 +34,7 @@ use serde_json::Value;
 ///
 /// #### Authentication: *Optional scope: any scope*
 ///
-pub fn get_post(c: &TwitchClient, chan_id: &str, post_id: &str)
-        -> TwitchResult<FeedPost> {
+pub fn get_post(c: &TwitchClient, chan_id: &str, post_id: &str) -> TwitchResult<FeedPost> {
     let r = try!(c.get::<FeedPost>(&format!("/feed/{}/posts/{}", chan_id, post_id)));
     Ok(r)
 }
@@ -48,12 +47,13 @@ pub fn get_post(c: &TwitchClient, chan_id: &str, post_id: &str)
 ///
 /// #### Authentication: *Optional scope: any scope*
 ///
-pub fn get_posts<'c>(c: &'c TwitchClient, chan_id: &str)
-        -> TwitchResult<FeedPosts<'c>> {
-    let iter = FeedPosts { client: c,
-                           chan_id: String::from(chan_id),
-                           cur: None,
-                           cursor: None };
+pub fn get_posts<'c>(c: &'c TwitchClient, chan_id: &str) -> TwitchResult<FeedPosts<'c>> {
+    let iter = FeedPosts {
+        client: c,
+        chan_id: String::from(chan_id),
+        cur: None,
+        cursor: None,
+    };
     Ok(iter)
 }
 
@@ -65,9 +65,11 @@ pub fn get_posts<'c>(c: &'c TwitchClient, chan_id: &str)
 ///
 /// #### Authentication: `channel_feed_edit`
 ///
-pub fn new_post(c: &TwitchClient, chan_id: &str, data: &str)
-        -> TwitchResult<NewFeedPostResponse> {
-    let r = try!(c.post::<NewContent, NewFeedPostResponse>(&format!("/feed/{}/posts", chan_id), &NewContent { content: data }));
+pub fn new_post(c: &TwitchClient, chan_id: &str, data: &str) -> TwitchResult<NewFeedPostResponse> {
+    let r = try!(c.post::<NewContent, NewFeedPostResponse>(
+        &format!("/feed/{}/posts", chan_id),
+        &NewContent { content: data }
+    ));
     Ok(r)
 }
 
@@ -75,8 +77,7 @@ pub fn new_post(c: &TwitchClient, chan_id: &str, data: &str)
 ///
 /// #### Authentication: `channel_feed_edit`
 ///
-pub fn delete_post(c: &TwitchClient, chan_id: &str, post_id: &str)
-        -> TwitchResult<FeedPost> {
+pub fn delete_post(c: &TwitchClient, chan_id: &str, post_id: &str) -> TwitchResult<FeedPost> {
     let r = try!(c.delete::<FeedPost>(&format!("/feed/{}/posts/{}", chan_id, post_id)));
     Ok(r)
 }
@@ -89,9 +90,19 @@ pub fn delete_post(c: &TwitchClient, chan_id: &str, post_id: &str)
 ///
 /// #### Authentication: `channel_feed_edit`
 ///
-pub fn new_post_reaction(c: &TwitchClient, chan_id: &str, post_id: &str, emote_id: &str)
-        -> TwitchResult<NewReactionResponse> {
-    let r = try!(c.post::<Value, NewReactionResponse>(&format!("/feed/{}/posts/{}/reactions?emote_id={}", chan_id, post_id, emote_id), &Value::Null));
+pub fn new_post_reaction(
+    c: &TwitchClient,
+    chan_id: &str,
+    post_id: &str,
+    emote_id: &str,
+) -> TwitchResult<NewReactionResponse> {
+    let r = try!(c.post::<Value, NewReactionResponse>(
+        &format!(
+            "/feed/{}/posts/{}/reactions?emote_id={}",
+            chan_id, post_id, emote_id
+        ),
+        &Value::Null
+    ));
     Ok(r)
 }
 
@@ -103,9 +114,16 @@ pub fn new_post_reaction(c: &TwitchClient, chan_id: &str, post_id: &str, emote_i
 ///
 /// #### Authentication: `channel_feed_edit`
 ///
-pub fn delete_post_reaction(c: &TwitchClient, chan_id: &str, post_id: &str, emote_id: &str)
-        -> TwitchResult<DelReactionResponse> {
-    let r = try!(c.delete::<DelReactionResponse>(&format!("/feed/{}/posts/{}/reactions?emote_id={}", chan_id, post_id, emote_id)));
+pub fn delete_post_reaction(
+    c: &TwitchClient,
+    chan_id: &str,
+    post_id: &str,
+    emote_id: &str,
+) -> TwitchResult<DelReactionResponse> {
+    let r = try!(c.delete::<DelReactionResponse>(&format!(
+        "/feed/{}/posts/{}/reactions?emote_id={}",
+        chan_id, post_id, emote_id
+    )));
     Ok(r)
 }
 
@@ -117,13 +135,18 @@ pub fn delete_post_reaction(c: &TwitchClient, chan_id: &str, post_id: &str, emot
 ///
 /// #### Authentication: *Optional scope: any scope*
 ///
-pub fn get_comments<'c>(c: &'c TwitchClient, chan_id: &str, post_id: &str)
-        -> TwitchResult<FeedPostCommentIterator<'c>> {
-    let iter = FeedPostCommentIterator { client: c,
-                                         chan_id: String::from(chan_id),
-                                         post_id: String::from(post_id),
-                                         cur: None,
-                                         cursor: None };
+pub fn get_comments<'c>(
+    c: &'c TwitchClient,
+    chan_id: &str,
+    post_id: &str,
+) -> TwitchResult<FeedPostCommentIterator<'c>> {
+    let iter = FeedPostCommentIterator {
+        client: c,
+        chan_id: String::from(chan_id),
+        post_id: String::from(post_id),
+        cur: None,
+        cursor: None,
+    };
     Ok(iter)
 }
 
@@ -135,9 +158,16 @@ pub fn get_comments<'c>(c: &'c TwitchClient, chan_id: &str, post_id: &str)
 ///
 /// #### Authentication: `channel_feed_edit`
 ///
-pub fn new_comment(c: &TwitchClient, chan_id: &str, post_id: &str, data: &str)
-        -> TwitchResult<FeedPostComment> {
-    let r = try!(c.post::<NewContent, FeedPostComment>(&format!("/feed/{}/posts/{}/comments", chan_id, post_id), &NewContent { content: data } ));
+pub fn new_comment(
+    c: &TwitchClient,
+    chan_id: &str,
+    post_id: &str,
+    data: &str,
+) -> TwitchResult<FeedPostComment> {
+    let r = try!(c.post::<NewContent, FeedPostComment>(
+        &format!("/feed/{}/posts/{}/comments", chan_id, post_id),
+        &NewContent { content: data }
+    ));
     Ok(r)
 }
 
@@ -145,9 +175,16 @@ pub fn new_comment(c: &TwitchClient, chan_id: &str, post_id: &str, data: &str)
 ///
 /// #### Authentication: `channel_feed_edit`
 ///
-pub fn delete_comment(c: &TwitchClient, chan_id: &str, post_id: &str, comment_id: &str)
-        -> TwitchResult<FeedPostComment> {
-    let r = try!(c.delete::<FeedPostComment>(&format!("/feed/{}/posts/{}/comments/{}", chan_id, post_id, comment_id)));
+pub fn delete_comment(
+    c: &TwitchClient,
+    chan_id: &str,
+    post_id: &str,
+    comment_id: &str,
+) -> TwitchResult<FeedPostComment> {
+    let r = try!(c.delete::<FeedPostComment>(&format!(
+        "/feed/{}/posts/{}/comments/{}",
+        chan_id, post_id, comment_id
+    )));
     Ok(r)
 }
 
@@ -160,9 +197,19 @@ pub fn delete_comment(c: &TwitchClient, chan_id: &str, post_id: &str, comment_id
 ///
 /// #### Authentication: `channel_feed_edit`
 ///
-pub fn new_comment_reaction(c: &TwitchClient, chan_id: &str, post_id: &str, comment_id: &str)
-        -> TwitchResult<NewReactionResponse> {
-    let r = try!(c.post::<Value, NewReactionResponse>(&format!("/feed/{}/posts/{}/comments/{}/reactions?emote_id=endorse", chan_id, post_id, comment_id), &Value::Null));
+pub fn new_comment_reaction(
+    c: &TwitchClient,
+    chan_id: &str,
+    post_id: &str,
+    comment_id: &str,
+) -> TwitchResult<NewReactionResponse> {
+    let r = try!(c.post::<Value, NewReactionResponse>(
+        &format!(
+            "/feed/{}/posts/{}/comments/{}/reactions?emote_id=endorse",
+            chan_id, post_id, comment_id
+        ),
+        &Value::Null
+    ));
     Ok(r)
 }
 
@@ -175,9 +222,16 @@ pub fn new_comment_reaction(c: &TwitchClient, chan_id: &str, post_id: &str, comm
 ///
 /// #### Authentication: `channel_feed_edit`
 ///
-pub fn delete_comment_reaction(c: &TwitchClient, chan_id: &str, post_id: &str, comment_id: &str)
-        -> TwitchResult<DelReactionResponse> {
-    let r = try!(c.delete::<DelReactionResponse>(&format!("/feed/{}/posts/{}/comments/{}/reactions?emote_id=endorse", chan_id, post_id, comment_id)));
+pub fn delete_comment_reaction(
+    c: &TwitchClient,
+    chan_id: &str,
+    post_id: &str,
+    comment_id: &str,
+) -> TwitchResult<DelReactionResponse> {
+    let r = try!(c.delete::<DelReactionResponse>(&format!(
+        "/feed/{}/posts/{}/comments/{}/reactions?emote_id=endorse",
+        chan_id, post_id, comment_id
+    )));
     Ok(r)
 }
 
@@ -308,7 +362,6 @@ impl<'c> Iterator for FeedPostCommentIterator<'c> {
     }
 }
 
-
 ///////////////////////////////////////
 // TESTS
 ///////////////////////////////////////
@@ -316,8 +369,8 @@ impl<'c> Iterator for FeedPostCommentIterator<'c> {
 #[cfg(test)]
 mod tests {
     use super::super::new;
-    use super::super::response;
-    use super::super::tests::{CLIENTID, TOKEN, CHANID};
+
+    use super::super::tests::{CHANID, CLIENTID, TOKEN};
 
     use super::*;
 
@@ -328,57 +381,77 @@ mod tests {
 
         // create post
         match new_post(&c, CHANID, "channel_feed::tests::FeedPost") {
-            Ok(r)  => assert_eq!(r.post.body, "channel_feed::tests::FeedPost"),
-            Err(r) => { println!("{:?}", r); assert!(false); }
+            Ok(r) => assert_eq!(r.post.body, "channel_feed::tests::FeedPost"),
+            Err(r) => {
+                println!("{:?}", r);
+                assert!(false);
+            }
         };
 
         // count posts
         match get_posts(&c, CHANID) {
-            Ok(r)  => assert!(r.count() > 0),
-            Err(r) => { println!("{:?}", r); assert!(false); }
+            Ok(r) => assert!(r.count() > 0),
+            Err(r) => {
+                println!("{:?}", r);
+                assert!(false);
+            }
         }
 
         // create post reactions
         for post in get_posts(&c, CHANID).unwrap() {
             match new_post_reaction(&c, CHANID, &post.id, "25") {
-                Ok(r)  => (),
-                Err(r) => assert!(false)
+                Ok(_r) => (),
+                Err(_r) => assert!(false),
             }
         }
 
         // read and delete post reactions
         for post in get_posts(&c, CHANID).unwrap() {
             match post.reactions.expect("no reactions for post").get("25") {
-                Some(r) => (),
-                None    => assert!(false)
+                Some(_r) => (),
+                None => assert!(false),
             }
 
             match delete_post_reaction(&c, CHANID, &post.id, "25") {
                 Ok(r) => assert!(r.deleted),
-                Err(r) => { println!("{:?}", r); assert!(false); }
+                Err(r) => {
+                    println!("{:?}", r);
+                    assert!(false);
+                }
             }
         }
 
         // count post reactions
         for post in get_posts(&c, CHANID).unwrap() {
             // count reactions
-            assert!(post.reactions.expect("no reactions for post").keys().count() == 0);
+            assert!(
+                post.reactions
+                    .expect("no reactions for post")
+                    .keys()
+                    .count()
+                    == 0
+            );
         }
 
         // delete posts
         for post in get_posts(&c, CHANID).unwrap() {
             match delete_post(&c, CHANID, &post.id) {
-                Ok(r)  => assert!(r.id == post.id && r.deleted.unwrap() == true),
-                Err(r) => { println!("{:?}", r); assert!(false); }
+                Ok(r) => assert!(r.id == post.id && r.deleted.unwrap() == true),
+                Err(r) => {
+                    println!("{:?}", r);
+                    assert!(false);
+                }
             }
         }
 
         // count posts
         match get_posts(&c, CHANID) {
-            Ok(r)  => assert!(r.count() == 0),
-            Err(r) => { println!("{:?}", r); assert!(false); }
+            Ok(r) => assert!(r.count() == 0),
+            Err(r) => {
+                println!("{:?}", r);
+                assert!(false);
+            }
         }
-
     }
 
     #[test]
@@ -391,23 +464,37 @@ mod tests {
             let post = r.post;
 
             // create comment
-            if let Ok(comment) = new_comment(&c, CHANID, &post.id, "channel_feed::tests::FeedPostComment comment") {
+            if let Ok(comment) = new_comment(
+                &c,
+                CHANID,
+                &post.id,
+                "channel_feed::tests::FeedPostComment comment",
+            ) {
                 // create comment reaction
                 match new_comment_reaction(&c, CHANID, &post.id, &comment.id) {
-                    Ok(r)  => (),
-                    Err(r) => { println!("{:?}", r); assert!(false); }
+                    Ok(_r) => (),
+                    Err(r) => {
+                        println!("{:?}", r);
+                        assert!(false);
+                    }
                 };
 
                 // delete comment reaction
                 match delete_comment_reaction(&c, CHANID, &post.id, &comment.id) {
-                    Ok(r)  => assert_eq!(r.deleted, true),
-                    Err(r) => { println!("{:?}", r); assert!(false); }
+                    Ok(r) => assert_eq!(r.deleted, true),
+                    Err(r) => {
+                        println!("{:?}", r);
+                        assert!(false);
+                    }
                 }
 
                 // delete comment
                 match delete_comment(&c, CHANID, &post.id, &comment.id) {
-                    Ok(r)  => assert_eq!(r.deleted, true),
-                    Err(r) => { println!("{:?}", r); assert!(false); }
+                    Ok(r) => assert_eq!(r.deleted, true),
+                    Err(r) => {
+                        println!("{:?}", r);
+                        assert!(false);
+                    }
                 }
             } else {
                 assert!(false);
@@ -416,8 +503,11 @@ mod tests {
             // delete post
             for post in get_posts(&c, CHANID).unwrap() {
                 match delete_post(&c, CHANID, &post.id) {
-                    Ok(r)  => (),
-                    Err(r) => { println!("{:?}", r); assert!(false); }
+                    Ok(_r) => (),
+                    Err(r) => {
+                        println!("{:?}", r);
+                        assert!(false);
+                    }
                 }
             }
         } else {

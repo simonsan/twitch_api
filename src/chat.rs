@@ -14,15 +14,14 @@
 
 use std::collections::HashMap;
 
-use super::TwitchClient;
 use super::response::TwitchResult;
+use super::TwitchClient;
 
 /// Gets a list of badges that can be used in chat for a specified channel
 ///
 /// #### Authentication: `None`
 ///
-pub fn get_badges(c: &TwitchClient, chan_id: &str)
-        -> TwitchResult<BadgeSet> {
+pub fn get_badges(c: &TwitchClient, chan_id: &str) -> TwitchResult<BadgeSet> {
     let r = try!(c.get::<BadgeSet>(&format!("/chat/{}/badges", chan_id)));
     Ok(r)
 }
@@ -35,9 +34,11 @@ pub fn get_badges(c: &TwitchClient, chan_id: &str)
 /// Caution: When not specifying the emotesets parameter,
 /// this endpoint returns a large amount of data.
 ///
-pub fn get_emote_sets(c: &TwitchClient, sets: &[&str])
-        -> TwitchResult<EmotesBySet> {
-    let r = try!(c.get::<EmotesBySet>(&format!("/chat/emoticon_images?emotesets={}", sets.join(","))));
+pub fn get_emote_sets(c: &TwitchClient, sets: &[&str]) -> TwitchResult<EmotesBySet> {
+    let r = try!(c.get::<EmotesBySet>(&format!(
+        "/chat/emoticon_images?emotesets={}",
+        sets.join(",")
+    )));
     Ok(r)
 }
 
@@ -48,8 +49,7 @@ pub fn get_emote_sets(c: &TwitchClient, sets: &[&str])
 /// # Remarks
 /// Caution: This endpoint returns a large amount of data.
 ///
-pub fn get_emotes(c: &TwitchClient)
-        -> TwitchResult<ChatEmotes> {
+pub fn get_emotes(c: &TwitchClient) -> TwitchResult<ChatEmotes> {
     let r = try!(c.get::<ChatEmotes>("/chat/emoticons"));
     Ok(r)
 }
@@ -109,7 +109,6 @@ pub struct ChatEmoteImage {
 #[cfg(test)]
 mod tests {
     use super::super::new;
-    use super::super::response;
     use super::super::tests::CLIENTID;
 
     #[test]
@@ -117,8 +116,11 @@ mod tests {
         let c = new(String::from(CLIENTID));
 
         match super::get_badges(&c, "12826") {
-            Ok(r)  => assert!(r.contains_key("global_mod")),
-            Err(r) => { println!("{:?}", r); assert!(false); },
+            Ok(r) => assert!(r.contains_key("global_mod")),
+            Err(r) => {
+                println!("{:?}", r);
+                assert!(false);
+            }
         }
     }
 
@@ -127,8 +129,11 @@ mod tests {
         let c = new(String::from(CLIENTID));
 
         match super::get_emote_sets(&c, &["19151"]) {
-            Ok(r)  => assert!(r.emoticon_sets.contains_key("19151")),
-            Err(r) => { println!("{:?}", r); assert!(false); },
+            Ok(r) => assert!(r.emoticon_sets.contains_key("19151")),
+            Err(r) => {
+                println!("{:?}", r);
+                assert!(false);
+            }
         }
     }
 
@@ -137,8 +142,11 @@ mod tests {
         let c = new(String::from(CLIENTID));
 
         match super::get_emotes(&c) {
-            Ok(r)  => assert!(r.emoticons.len() > 0),
-            Err(r) => { println!("{:?}", r); assert!(false); },
+            Ok(r) => assert!(r.emoticons.len() > 0),
+            Err(r) => {
+                println!("{:?}", r);
+                assert!(false);
+            }
         }
     }
 }

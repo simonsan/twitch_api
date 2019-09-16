@@ -15,22 +15,23 @@
 extern crate chrono;
 extern crate serde_json;
 
-use std::collections::HashMap;
 use std;
+use std::collections::HashMap;
 use std::io::Write;
 
-use super::TwitchClient;
 use super::response::TwitchResult;
+use super::TwitchClient;
 
 /// Gets games sorted by number of current viewers on Twitch, most popular first
 ///
 /// #### Authentication: `None`
 ///
-pub fn top<'c>(c: &'c TwitchClient)
-        -> TwitchResult<TopGames<'c>> {
-    let iter = TopGames { client: c,
-                          cur: None,
-                          offset: 0 };
+pub fn top<'c>(c: &'c TwitchClient) -> TwitchResult<TopGames<'c>> {
+    let iter = TopGames {
+        client: c,
+        cur: None,
+        offset: 0,
+    };
     Ok(iter)
 }
 
@@ -83,7 +84,6 @@ impl<'c> Iterator for TopGames<'c> {
 #[cfg(test)]
 mod tests {
     use super::super::new;
-    use super::super::response;
     use super::super::tests::CLIENTID;
 
     #[test]

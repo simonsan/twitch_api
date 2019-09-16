@@ -38,8 +38,8 @@ extern crate serde_derive;
 
 extern crate hyper;
 extern crate hyper_rustls;
-extern crate serde_json;
 extern crate serde;
+extern crate serde_json;
 
 #[macro_use]
 pub mod response;
@@ -55,51 +55,53 @@ pub mod teams;
 pub mod users;
 pub mod videos;
 
-use response::{ApiError, TwitchResult, ErrorResponse};
+use response::{ApiError, ErrorResponse, TwitchResult};
 
-use hyper::Client;
 use hyper::client::RequestBuilder;
+use hyper::header::{qitem, Accept, Authorization, ContentType, Headers};
+use hyper::mime::{Attr, Mime, SubLevel, TopLevel, Value};
 use hyper::net::HttpsConnector;
-use hyper::header::{Accept, Authorization, ContentType, Headers, qitem};
-use hyper::mime::{Mime, TopLevel, SubLevel, Attr, Value};
+use hyper::Client;
 
+use serde::de::Deserialize;
+use serde::Serialize;
 use std::io::Write;
 use std::io::{stderr, Read};
-use serde::Serialize;
-use serde::de::Deserialize;
 
 #[derive(Debug)]
 pub struct TwitchClient {
-    client:   Client,
-    cid:      String,
-    token:    Option<String>,
+    client: Client,
+    cid: String,
+    token: Option<String>,
 }
 
 pub fn new(clientid: String) -> TwitchClient {
     TwitchClient {
-        client:  Client::with_connector(
-            HttpsConnector::new(hyper_rustls::TlsClient::new())),
-        cid:     clientid.clone(),
-        token:   None,
+        client: Client::with_connector(HttpsConnector::new(hyper_rustls::TlsClient::new())),
+        cid: clientid.clone(),
+        token: None,
     }
 }
 
 impl TwitchClient {
     fn build_request<'a, F>(&self, path: &str, build: F) -> RequestBuilder<'a>
-        where F: Fn(&str) -> RequestBuilder<'a> {
-        let url = String::from("https://api.twitch.tv/kraken")+path;
+    where
+        F: Fn(&str) -> RequestBuilder<'a>,
+    {
+        let url = String::from("https://api.twitch.tv/kraken") + path;
         let mut headers = Headers::new();
 
         headers.set_raw("Client-ID", vec![self.cid.clone().into_bytes()]);
         headers.set(Accept(vec![qitem(Mime(
             TopLevel::Application,
             SubLevel::Ext("vnd.twitchtv.v5+json".to_owned()),
-            vec![]))]
-        ));
+            vec![],
+        ))]));
         headers.set(ContentType(Mime(
             TopLevel::Application,
             SubLevel::Json,
-            vec![(Attr::Charset, Value::Utf8)])));
+            vec![(Attr::Charset, Value::Utf8)],
+        )));
         if let Some(ref token) = self.token {
             headers.set(Authorization(format!("OAuth {}", token)));
         }
@@ -119,11 +121,11 @@ impl TwitchClient {
             return Err(ApiError::empty_response());
         } else {
             match serde_json::from_str(&s) {
-                Ok(x)    => Ok(x),
+                Ok(x) => Ok(x),
                 Err(err) => {
                     if let Ok(mut e) = serde_json::from_str::<ErrorResponse>(&s) {
                         e.cause = Some(Box::new(err));
-                        return Err(ApiError::from(e))
+                        return Err(ApiError::from(e));
                     }
                     writeln!(&mut stderr(), "Serde Parse Fail:\n\"{}\"", &s).unwrap();
                     Err(ApiError::from(err))
@@ -132,24 +134,26 @@ impl TwitchClient {
         }
     }
 
-    pub fn post<T, R>(&self, path: &str, data: &T)
-            -> TwitchResult<R>
-            where T: Serialize, R: Deserialize {
-        let mut r = try!(
-            self.build_request(path, |url| self.client.post(url))
+    pub fn post<T, R>(&self, path: &str, data: &T) -> TwitchResult<R>
+    where
+        T: Serialize,
+        R: Deserialize,
+    {
+        let mut r = try!(self
+            .build_request(path, |url| self.client.post(url))
             .body(&try!(serde_json::to_string(data)))
-            .send() );
+            .send());
         let mut s = String::new();
         let _ = try!(r.read_to_string(&mut s));
         if s.len() == 0 {
             return Err(ApiError::empty_response());
         } else {
             match serde_json::from_str(&s) {
-                Ok(x)    => Ok(x),
+                Ok(x) => Ok(x),
                 Err(err) => {
                     if let Ok(mut e) = serde_json::from_str::<ErrorResponse>(&s) {
                         e.cause = Some(Box::new(err));
-                        return Err(ApiError::from(e))
+                        return Err(ApiError::from(e));
                     }
                     writeln!(&mut stderr(), "Serde Parse Fail:\n\"{}\"", &s).unwrap();
                     Err(ApiError::from(err))
@@ -158,24 +162,26 @@ impl TwitchClient {
         }
     }
 
-    pub fn put<T, R>(&self, path: &str, data: &T)
-            -> TwitchResult<R>
-            where T: Serialize, R: Deserialize {
-        let mut r = try!(
-            self.build_request(path, |url| self.client.put(url))
+    pub fn put<T, R>(&self, path: &str, data: &T) -> TwitchResult<R>
+    where
+        T: Serialize,
+        R: Deserialize,
+    {
+        let mut r = try!(self
+            .build_request(path, |url| self.client.put(url))
             .body(&try!(serde_json::to_string(data)))
-            .send() );
+            .send());
         let mut s = String::new();
         let _ = try!(r.read_to_string(&mut s));
         if s.len() == 0 {
             return Err(ApiError::empty_response());
         } else {
             match serde_json::from_str(&s) {
-                Ok(x)    => Ok(x),
+                Ok(x) => Ok(x),
                 Err(err) => {
                     if let Ok(mut e) = serde_json::from_str::<ErrorResponse>(&s) {
                         e.cause = Some(Box::new(err));
-                        return Err(ApiError::from(e))
+                        return Err(ApiError::from(e));
                     }
                     writeln!(&mut stderr(), "Serde Parse Fail:\n\"{}\"", &s).unwrap();
                     Err(ApiError::from(err))
@@ -185,18 +191,20 @@ impl TwitchClient {
     }
 
     pub fn delete<T: Deserialize>(&self, path: &str) -> TwitchResult<T> {
-        let mut r = try!(self.build_request(path, |url| self.client.delete(url)).send());
+        let mut r = try!(self
+            .build_request(path, |url| self.client.delete(url))
+            .send());
         let mut s = String::new();
         let _ = try!(r.read_to_string(&mut s));
         if s.len() == 0 {
             return Err(ApiError::empty_response());
         } else {
             match serde_json::from_str(&s) {
-                Ok(x)    => Ok(x),
+                Ok(x) => Ok(x),
                 Err(err) => {
                     if let Ok(mut e) = serde_json::from_str::<ErrorResponse>(&s) {
                         e.cause = Some(Box::new(err));
-                        return Err(ApiError::from(e))
+                        return Err(ApiError::from(e));
                     }
                     writeln!(&mut stderr(), "Serde Parse Fail:\n\"{}\"", &s).unwrap();
                     Err(ApiError::from(err))
@@ -204,7 +212,6 @@ impl TwitchClient {
             }
         }
     }
-
 }
 
 pub mod auth {
@@ -241,47 +248,57 @@ pub mod auth {
     // TODO: replace with:
     // https://doc.rust-lang.org/std/slice/trait.SliceConcatExt.html
     fn format_scope(scopes: &[Scope]) -> String {
-        let mut res = String::with_capacity(27*scopes.len());
+        let mut res = String::with_capacity(27 * scopes.len());
         for scope in scopes.iter() {
             res.push_str(&scope.to_string());
             res.push('+');
         }
-        res.trim_right_matches('+').to_owned()
+        res.trim_end_matches('+').to_owned()
     }
 
-    fn gen_auth_url(c: &TwitchClient,
-                    rtype: &str,
-                    redirect_url: &str,
-                    scope: &[Scope],
-                    state: &str) -> String {
-         String::from(
-             "https://api.twitch.tv/kraken/oauth2/authorize")+
-             "?response_type="+rtype+
-             "&client_id="+&c.cid+
-             "&redirect_uri="+redirect_url+
-             "&scope="+&format_scope(scope)+
-             "&state="+state
-     }
-
-     pub fn auth_code_flow(c: &TwitchClient,
-                           redirect_url: &str,
-                           scope: &[Scope],
-                           state: &str) -> String {
-          gen_auth_url(c, "code", redirect_url, scope, state)
+    fn gen_auth_url(
+        c: &TwitchClient,
+        rtype: &str,
+        redirect_url: &str,
+        scope: &[Scope],
+        state: &str,
+    ) -> String {
+        String::from("https://api.twitch.tv/kraken/oauth2/authorize")
+            + "?response_type="
+            + rtype
+            + "&client_id="
+            + &c.cid
+            + "&redirect_uri="
+            + redirect_url
+            + "&scope="
+            + &format_scope(scope)
+            + "&state="
+            + state
     }
 
-    pub fn imp_grant_flow(c: &TwitchClient,
-                          redirect_url: &str,
-                          scope: &[Scope],
-                          state: &str) -> String {
-         gen_auth_url(c, "token", redirect_url, scope, state)
-   }
+    pub fn auth_code_flow(
+        c: &TwitchClient,
+        redirect_url: &str,
+        scope: &[Scope],
+        state: &str,
+    ) -> String {
+        gen_auth_url(c, "code", redirect_url, scope, state)
+    }
+
+    pub fn imp_grant_flow(
+        c: &TwitchClient,
+        redirect_url: &str,
+        scope: &[Scope],
+        state: &str,
+    ) -> String {
+        gen_auth_url(c, "token", redirect_url, scope, state)
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    pub const CLIENTID: &'static str = "<PLACEHOLDER>";
-    pub const TOKEN: &'static str = "<PLACEHOLDER>";
-    pub const CHANID: &'static str = "<PLACEHOLDER>";
+    pub const CLIENTID: &'static str = "<TODO>";
+    pub const TOKEN: &'static str = "<TODO>";
+    pub const CHANID: &'static str = "<TODO>";
     pub const TESTCH: i64 = 12826;
 }

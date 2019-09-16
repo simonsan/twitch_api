@@ -17,22 +17,21 @@ extern crate serde_json;
 
 use self::chrono::prelude::*;
 
-use super::TwitchClient;
-use super::response::{TwitchResult, ApiError};
-use super::chat::EmotesBySet;
 use super::channels::Channel;
+use super::chat::EmotesBySet;
+use super::response::{ApiError, TwitchResult};
+use super::TwitchClient;
 
+use serde_json::Value;
 use std;
 use std::collections::HashMap;
 use std::io::Write;
-use serde_json::Value;
 
 /// Gets a user object based on the OAuth token provided
 ///
 /// #### Authentication: `user_read`
 ///
-pub fn get(c: &TwitchClient)
-        -> TwitchResult<User> {
+pub fn get(c: &TwitchClient) -> TwitchResult<User> {
     let r = try!(c.get::<User>("/user"));
     Ok(r)
 }
@@ -41,8 +40,7 @@ pub fn get(c: &TwitchClient)
 ///
 /// #### Authentication: `None`
 ///
-pub fn get_by_id(c: &TwitchClient, user_id: &str)
-        -> TwitchResult<User> {
+pub fn get_by_id(c: &TwitchClient, user_id: &str) -> TwitchResult<User> {
     let r = try!(c.get::<User>(&format!("/users/{}", user_id)));
     Ok(r)
 }
@@ -55,8 +53,7 @@ pub fn get_by_id(c: &TwitchClient, user_id: &str)
 ///
 /// #### Authentication: `user_subscriptions`
 ///
-pub fn emotes(c: &TwitchClient, user_id: &str)
-        -> TwitchResult<EmotesBySet> {
+pub fn emotes(c: &TwitchClient, user_id: &str) -> TwitchResult<EmotesBySet> {
     let r = try!(c.get::<EmotesBySet>(&format!("/users/{}/emotes", user_id)));
     Ok(r)
 }
@@ -65,9 +62,13 @@ pub fn emotes(c: &TwitchClient, user_id: &str)
 ///
 /// #### Authentication: `user_subscription`
 ///
-pub fn subscription(c: &TwitchClient, user_id: &str, channel_id: &str)
-        -> TwitchResult<UserSubFollow> {
-    let r = try!(c.get::<UserSubFollow>(&format!("/users/{}/subscriptions/{}", user_id, channel_id)));
+pub fn subscription(
+    c: &TwitchClient,
+    user_id: &str,
+    channel_id: &str,
+) -> TwitchResult<UserSubFollow> {
+    let r =
+        try!(c.get::<UserSubFollow>(&format!("/users/{}/subscriptions/{}", user_id, channel_id)));
     Ok(r)
 }
 
@@ -76,12 +77,13 @@ pub fn subscription(c: &TwitchClient, user_id: &str, channel_id: &str)
 ///
 /// #### Authentication: `None`
 ///
-pub fn following<'c>(c: &'c TwitchClient, user_id: &str)
-        -> TwitchResult<UserFollowIterator<'c>> {
-    let iter = UserFollowIterator { client: c,
-                                    user_id: String::from(user_id),
-                                    cur: None,
-                                    offset: 0 };
+pub fn following<'c>(c: &'c TwitchClient, user_id: &str) -> TwitchResult<UserFollowIterator<'c>> {
+    let iter = UserFollowIterator {
+        client: c,
+        user_id: String::from(user_id),
+        cur: None,
+        offset: 0,
+    };
     Ok(iter)
 }
 
@@ -91,11 +93,17 @@ pub fn following<'c>(c: &'c TwitchClient, user_id: &str)
 ///
 /// #### Authentication: `None`
 ///
-pub fn is_following(c: &TwitchClient, user_id: &str, channel_id: &str)
-        -> TwitchResult<Option<UserSubFollow>> {
-    let r = c.get::<UserSubFollow>(&format!("/users/{}/follows/channels/{}", user_id, channel_id));
+pub fn is_following(
+    c: &TwitchClient,
+    user_id: &str,
+    channel_id: &str,
+) -> TwitchResult<Option<UserSubFollow>> {
+    let r = c.get::<UserSubFollow>(&format!(
+        "/users/{}/follows/channels/{}",
+        user_id, channel_id
+    ));
     match r {
-        Ok(r)  => Ok(Some(r)),
+        Ok(r) => Ok(Some(r)),
         Err(e) => match e {
             ApiError::TwitchError(te) => {
                 if te.status == 404 {
@@ -103,9 +111,9 @@ pub fn is_following(c: &TwitchClient, user_id: &str, channel_id: &str)
                 } else {
                     return Err(ApiError::from(te));
                 }
-            },
-            _ => Err(e)
-        }
+            }
+            _ => Err(e),
+        },
     }
 }
 
@@ -113,11 +121,18 @@ pub fn is_following(c: &TwitchClient, user_id: &str, channel_id: &str)
 ///
 /// #### Authentication: `user_follows_edit`
 ///
-pub fn follow(c: &TwitchClient, user_id: &str, chan_id: &str, notifications: bool)
-        -> TwitchResult<UserSubFollow> {
-    let mut data: HashMap<String, bool> =  HashMap::new();
+pub fn follow(
+    c: &TwitchClient,
+    user_id: &str,
+    chan_id: &str,
+    notifications: bool,
+) -> TwitchResult<UserSubFollow> {
+    let mut data: HashMap<String, bool> = HashMap::new();
     data.insert("notifications".to_owned(), notifications);
-    let r = try!(c.put::<HashMap<String, bool>, UserSubFollow>(&format!("/users/{}/follows/channels/{}", user_id, chan_id), &data));
+    let r = try!(c.put::<HashMap<String, bool>, UserSubFollow>(
+        &format!("/users/{}/follows/channels/{}", user_id, chan_id),
+        &data
+    ));
     Ok(r)
 }
 
@@ -125,15 +140,14 @@ pub fn follow(c: &TwitchClient, user_id: &str, chan_id: &str, notifications: boo
 ///
 /// #### Authentication: `user_follows_edit`
 ///
-pub fn unfollow(c: &TwitchClient, user_id: &str, chan_id: &str)
-        -> TwitchResult<()> {
+pub fn unfollow(c: &TwitchClient, user_id: &str, chan_id: &str) -> TwitchResult<()> {
     let r = c.delete::<()>(&format!("/users/{}/follows/channels/{}", user_id, chan_id));
     match r {
-        Ok(_)  => Ok(assert!(false)), // this should never happen
+        Ok(_) => Ok(assert!(false)), // this should never happen
         Err(r) => match r {
             ApiError::EmptyResponse(_) => Ok(()),
-            _                          => Err(r)
-        }
+            _ => Err(r),
+        },
     }
 }
 
@@ -141,12 +155,13 @@ pub fn unfollow(c: &TwitchClient, user_id: &str, chan_id: &str)
 ///
 /// #### Authentication: `user_blocks_read`
 ///
-pub fn blocking<'c>(c: &'c TwitchClient, user_id: &str)
-        -> TwitchResult<UserBlockIterator<'c>> {
-    let iter = UserBlockIterator { client: c,
-                                   user_id: String::from(user_id),
-                                   cur: None,
-                                   offset: 0 };
+pub fn blocking<'c>(c: &'c TwitchClient, user_id: &str) -> TwitchResult<UserBlockIterator<'c>> {
+    let iter = UserBlockIterator {
+        client: c,
+        user_id: String::from(user_id),
+        cur: None,
+        offset: 0,
+    };
     Ok(iter)
 }
 
@@ -155,9 +170,11 @@ pub fn blocking<'c>(c: &'c TwitchClient, user_id: &str)
 ///
 /// #### Authentication: `user_blocks_edit`
 ///
-pub fn block(c: &TwitchClient, src_user_id: &str, tgt_user_id: &str)
-        -> TwitchResult<UserBlock> {
-    let r = try!(c.put::<Value, UserBlock>(&format!("/users/{}/blocks/{}", src_user_id, tgt_user_id), &Value::Null));
+pub fn block(c: &TwitchClient, src_user_id: &str, tgt_user_id: &str) -> TwitchResult<UserBlock> {
+    let r = try!(c.put::<Value, UserBlock>(
+        &format!("/users/{}/blocks/{}", src_user_id, tgt_user_id),
+        &Value::Null
+    ));
     Ok(r)
 }
 
@@ -170,15 +187,14 @@ pub fn block(c: &TwitchClient, src_user_id: &str, tgt_user_id: &str)
 ///
 /// #### Authentication: `user_blocks_edit`
 ///
-pub fn unblock(c: &TwitchClient, src_user_id: &str, tgt_user_id: &str)
-        -> TwitchResult<()> {
+pub fn unblock(c: &TwitchClient, src_user_id: &str, tgt_user_id: &str) -> TwitchResult<()> {
     let r = c.delete::<()>(&format!("/users/{}/blocks/{}", src_user_id, tgt_user_id));
     match r {
-        Ok(_)  => Ok(assert!(false)), // this should never happen
+        Ok(_) => Ok(assert!(false)), // this should never happen
         Err(r) => match r {
             ApiError::EmptyResponse(_) => Ok(()),
-            _                          => Err(r)
-        }
+            _ => Err(r),
+        },
     }
 }
 
@@ -239,7 +255,10 @@ impl<'c> Iterator for UserFollowIterator<'c> {
     type Item = UserSubFollow;
 
     fn next(&mut self) -> Option<UserSubFollow> {
-        let url = &format!("/users/{}/follows/channels?limit=100&offset={}", &self.user_id, self.offset);
+        let url = &format!(
+            "/users/{}/follows/channels?limit=100&offset={}",
+            &self.user_id, self.offset
+        );
         next_result!(self, &url, SerdeUserFollows, follows)
     }
 }
@@ -260,7 +279,10 @@ impl<'c> Iterator for UserBlockIterator<'c> {
     type Item = UserBlock;
 
     fn next(&mut self) -> Option<UserBlock> {
-        let url = &format!("/users/{}/blocks?limit=100&offset={}", &self.user_id, self.offset);
+        let url = &format!(
+            "/users/{}/blocks?limit=100&offset={}",
+            &self.user_id, self.offset
+        );
         next_result!(self, &url, SerdeUserBlocks, blocks)
     }
 }
@@ -273,7 +295,7 @@ impl<'c> Iterator for UserBlockIterator<'c> {
 mod tests {
     use super::super::new;
     use super::super::response::ApiError;
-    use super::super::tests::{CLIENTID, TOKEN, CHANID, TESTCH};
+    use super::super::tests::{CHANID, CLIENTID, TESTCH, TOKEN};
 
     #[test]
     fn user() {
@@ -281,63 +303,106 @@ mod tests {
         c.set_oauth_token(TOKEN);
 
         if let Some(user) = match super::get(&c) {
-            Ok(r)  => { assert!(r.email.is_some()); Some(r) },
-            Err(r) => { println!("{:?}", r); assert!(false); None }
-            } {
+            Ok(r) => {
+                assert!(r.email.is_some());
+                Some(r)
+            }
+            Err(r) => {
+                println!("{:?}", r);
+                assert!(false);
+                None
+            }
+        } {
             let user_id = user.id.to_string();
 
             match super::get_by_id(&c, &user_id) {
-                Ok(r)  => assert_eq!(r.name, user.name),
-                Err(r) => { println!("{:?}", r); assert!(false); }
+                Ok(r) => assert_eq!(r.name, user.name),
+                Err(r) => {
+                    println!("{:?}", r);
+                    assert!(false);
+                }
             }
             match super::emotes(&c, &user_id) {
-                Ok(r)  => assert!(r.emoticon_sets.len() > 0),
-                Err(r) => { println!("{:?}", r); assert!(false); }
+                Ok(r) => assert!(r.emoticon_sets.len() > 0),
+                Err(r) => {
+                    println!("{:?}", r);
+                    assert!(false);
+                }
             }
             match super::subscription(&c, &user_id, "1") {
-                Ok(r)  => (),
+                Ok(_r) => (),
                 Err(r) => match r {
                     ApiError::TwitchError(e) => assert_eq!(e.status, 422),
-                    _ => { println!("{:?}", r); assert!(false); }
-                }
+                    _ => {
+                        println!("{:?}", r);
+                        assert!(false);
+                    }
+                },
             }
             // follow
             match super::follow(&c, &user_id, &TESTCH.to_string(), false) {
-                Ok(r)  => assert_eq!(r.channel.id, TESTCH),
-                Err(r) => { println!("{:?}", r); assert!(false); }
+                Ok(r) => assert_eq!(r.channel.id, TESTCH),
+                Err(r) => {
+                    println!("{:?}", r);
+                    assert!(false);
+                }
             }
             match super::following(&c, &user_id) {
-                Ok(mut r)  => assert_eq!(r.next().unwrap().channel.id, TESTCH),
-                Err(r)     => { println!("{:?}", r); assert!(false); }
+                Ok(mut r) => assert_eq!(r.next().unwrap().channel.id, TESTCH),
+                Err(r) => {
+                    println!("{:?}", r);
+                    assert!(false);
+                }
             }
             match super::is_following(&c, &user_id, &TESTCH.to_string()) {
-                Ok(r)  => (),
-                Err(r) => { println!("{:?}", r); assert!(false); }
+                Ok(_r) => (),
+                Err(r) => {
+                    println!("{:?}", r);
+                    assert!(false);
+                }
             }
             match super::unfollow(&c, &user_id, &TESTCH.to_string()) {
-                Ok(r)  => (),
-                Err(r) => { println!("{:?}", r); assert!(false); }
+                Ok(_r) => (),
+                Err(r) => {
+                    println!("{:?}", r);
+                    assert!(false);
+                }
             }
             match super::is_following(&c, &user_id, &TESTCH.to_string()) {
-                Ok(r)  => assert!(r.is_none()),
-                Err(r) => { println!("{:?}", r); assert!(false); }
+                Ok(r) => assert!(r.is_none()),
+                Err(r) => {
+                    println!("{:?}", r);
+                    assert!(false);
+                }
             }
             // block
             match super::block(&c, &user_id, "1") {
-                Ok(r)  => assert_eq!(r.user.id, 1),
-                Err(r) => { println!("{:?}", r); assert!(false); }
+                Ok(r) => assert_eq!(r.user.id, 1),
+                Err(r) => {
+                    println!("{:?}", r);
+                    assert!(false);
+                }
             }
             match super::blocking(&c, &user_id) {
-                Ok(mut r)  => assert_eq!(r.next().unwrap().user.id, 1),
-                Err(r)     => { println!("{:?}", r); assert!(false); }
+                Ok(mut r) => assert_eq!(r.next().unwrap().user.id, 1),
+                Err(r) => {
+                    println!("{:?}", r);
+                    assert!(false);
+                }
             }
             match super::unblock(&c, &user_id, "1") {
-                Ok(r)  => (),
-                Err(r) => { println!("{:?}", r); assert!(false); }
+                Ok(_r) => (),
+                Err(r) => {
+                    println!("{:?}", r);
+                    assert!(false);
+                }
             }
             match super::blocking(&c, &user_id) {
-                Ok(mut r)  => assert!(r.next().is_none()),
-                Err(r)     => { println!("{:?}", r); assert!(false); }
+                Ok(mut r) => assert!(r.next().is_none()),
+                Err(r) => {
+                    println!("{:?}", r);
+                    assert!(false);
+                }
             }
         }
     }

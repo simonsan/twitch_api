@@ -21,17 +21,20 @@ use std::io::Write;
 
 use self::chrono::prelude::*;
 
-use super::TwitchClient;
 use super::response::TwitchResult;
 use super::users::User;
+use super::TwitchClient;
 
 /// Gets all active teams
 ///
 /// #### Authentication: `None`
 ///
-pub fn get_all<'c>(c: &'c TwitchClient)
-        -> TwitchResult<TeamIterator<'c>> {
-    let iter = TeamIterator { client: c, cur: None, offset: 0 };
+pub fn get_all<'c>(c: &'c TwitchClient) -> TwitchResult<TeamIterator<'c>> {
+    let iter = TeamIterator {
+        client: c,
+        cur: None,
+        offset: 0,
+    };
     Ok(iter)
 }
 
@@ -39,8 +42,7 @@ pub fn get_all<'c>(c: &'c TwitchClient)
 ///
 /// #### Authentication: `None`
 ///
-pub fn get(c: &TwitchClient, team_name: &str)
-        -> TwitchResult<Team> {
+pub fn get(c: &TwitchClient, team_name: &str) -> TwitchResult<Team> {
     let r = try!(c.get::<Team>(&format!("/teams/{}", team_name)));
     Ok(r)
 }
@@ -91,17 +93,20 @@ impl<'c> Iterator for TeamIterator<'c> {
 mod tests {
     use super::super::new;
     use super::super::response;
-    use super::super::tests::{CLIENTID, TOKEN, CHANID};
+    use super::super::tests::{CHANID, CLIENTID, TOKEN};
 
     #[test]
     fn get_all() {
         let c = new(String::from(CLIENTID));
         match super::get_all(&c) {
-            Ok(mut r)  => match r.next() {
+            Ok(mut r) => match r.next() {
                 Some(team) => assert_ne!(team.id, 0),
-                None       => assert!(false)
+                None => assert!(false),
             },
-            Err(r) => { println!("{:?}", r); assert!(false); }
+            Err(r) => {
+                println!("{:?}", r);
+                assert!(false);
+            }
         }
     }
 }

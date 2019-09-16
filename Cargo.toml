@@ -1,10 +1,10 @@
 [package]
 name = "twitch_api"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Matt Shanker <hatmatteroffact@gmail.com>"]
 description = "Twitch API library"
 repository = "https://github.com/hatmatter/twitch_api"
-readme = "README"
+readme = "README.md"
 keywords = ["twitch", "api"]
 categories = ["api-bindings"]
 license = "Apache-2.0"
