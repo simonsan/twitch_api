@@ -30,7 +30,7 @@ use std::io::Write;
 /// #### Authentication: `None`
 ///
 pub fn get(c: &TwitchClient, video_id: &str) -> TwitchResult<Video> {
-    let r = try!(c.get::<Video>(&format!("/videos/{}", video_id)));
+    let r = r#try!(c.get::<Video>(&format!("/videos/{}", video_id)));
     Ok(r)
 }
 

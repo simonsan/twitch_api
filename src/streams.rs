@@ -31,7 +31,7 @@ use super::TwitchClient;
 /// #### Authentication: `None`
 ///
 pub fn get(c: &TwitchClient, chan_id: &str) -> TwitchResult<StreamByUser> {
-    let r = try!(c.get::<StreamByUser>(&format!("/streams/{}", chan_id)));
+    let r = r#try!(c.get::<StreamByUser>(&format!("/streams/{}", chan_id)));
     Ok(r)
 }
 
@@ -71,7 +71,7 @@ pub fn summary(c: &TwitchClient, game: Option<&str>) -> TwitchResult<Summary> {
         url.push_str("?game=");
         url.push_str(game);
     }
-    let r = try!(c.get::<Summary>(&url));
+    let r = r#try!(c.get::<Summary>(&url));
     Ok(r)
 }
 
@@ -95,10 +95,10 @@ pub fn featured<'c>(c: &'c TwitchClient) -> TwitchResult<FeaturedIterator<'c>> {
 ///
 pub fn followed(c: &TwitchClient) -> TwitchResult<FollowedStreams> {
     let mut lst = Vec::new();
-    let mut r = try!(c.get::<FollowedStreams>("/streams/followed?limit=100"));
+    let mut r = r#try!(c.get::<FollowedStreams>("/streams/followed?limit=100"));
     lst.append(&mut r._streams);
     while let Some(cursor) = r._cursor {
-        r = try!(
+        r = r#try!(
             c.get::<FollowedStreams>(&format!("/streams/followsed?cursor={}&limit=100", cursor))
         );
         lst.append(&mut r._streams);

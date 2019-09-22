@@ -114,9 +114,9 @@ impl TwitchClient {
     }
 
     pub fn get<T: Deserialize>(&self, path: &str) -> TwitchResult<T> {
-        let mut r = try!(self.build_request(path, |url| self.client.get(url)).send());
+        let mut r = r#try!(self.build_request(path, |url| self.client.get(url)).send());
         let mut s = String::new();
-        let _ = try!(r.read_to_string(&mut s));
+        let _ = r#try!(r.read_to_string(&mut s));
         if s.len() == 0 {
             return Err(ApiError::empty_response());
         } else {
@@ -139,12 +139,12 @@ impl TwitchClient {
         T: Serialize,
         R: Deserialize,
     {
-        let mut r = try!(self
+        let mut r = r#try!(self
             .build_request(path, |url| self.client.post(url))
-            .body(&try!(serde_json::to_string(data)))
+            .body(&r#try!(serde_json::to_string(data)))
             .send());
         let mut s = String::new();
-        let _ = try!(r.read_to_string(&mut s));
+        let _ = r#try!(r.read_to_string(&mut s));
         if s.len() == 0 {
             return Err(ApiError::empty_response());
         } else {
@@ -167,12 +167,12 @@ impl TwitchClient {
         T: Serialize,
         R: Deserialize,
     {
-        let mut r = try!(self
+        let mut r = r#try!(self
             .build_request(path, |url| self.client.put(url))
-            .body(&try!(serde_json::to_string(data)))
+            .body(&r#try!(serde_json::to_string(data)))
             .send());
         let mut s = String::new();
-        let _ = try!(r.read_to_string(&mut s));
+        let _ = r#try!(r.read_to_string(&mut s));
         if s.len() == 0 {
             return Err(ApiError::empty_response());
         } else {
@@ -191,11 +191,11 @@ impl TwitchClient {
     }
 
     pub fn delete<T: Deserialize>(&self, path: &str) -> TwitchResult<T> {
-        let mut r = try!(self
+        let mut r = r#try!(self
             .build_request(path, |url| self.client.delete(url))
             .send());
         let mut s = String::new();
-        let _ = try!(r.read_to_string(&mut s));
+        let _ = r#try!(r.read_to_string(&mut s));
         if s.len() == 0 {
             return Err(ApiError::empty_response());
         } else {
@@ -297,8 +297,8 @@ pub mod auth {
 
 #[cfg(test)]
 mod tests {
-    pub const CLIENTID: &'static str = "<TODO>";
-    pub const TOKEN: &'static str = "<TODO>";
-    pub const CHANID: &'static str = "<TODO>";
+    pub const CLIENTID: &'static str = "";
+    pub const TOKEN: &'static str = "";
+    pub const CHANID: &'static str = "";
     pub const TESTCH: i64 = 12826;
 }

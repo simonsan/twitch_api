@@ -32,7 +32,7 @@ use std::io::Write;
 /// #### Authentication: `user_read`
 ///
 pub fn get(c: &TwitchClient) -> TwitchResult<User> {
-    let r = try!(c.get::<User>("/user"));
+    let r = r#try!(c.get::<User>("/user"));
     Ok(r)
 }
 
@@ -41,7 +41,7 @@ pub fn get(c: &TwitchClient) -> TwitchResult<User> {
 /// #### Authentication: `None`
 ///
 pub fn get_by_id(c: &TwitchClient, user_id: &str) -> TwitchResult<User> {
-    let r = try!(c.get::<User>(&format!("/users/{}", user_id)));
+    let r = r#try!(c.get::<User>(&format!("/users/{}", user_id)));
     Ok(r)
 }
 
@@ -54,7 +54,7 @@ pub fn get_by_id(c: &TwitchClient, user_id: &str) -> TwitchResult<User> {
 /// #### Authentication: `user_subscriptions`
 ///
 pub fn emotes(c: &TwitchClient, user_id: &str) -> TwitchResult<EmotesBySet> {
-    let r = try!(c.get::<EmotesBySet>(&format!("/users/{}/emotes", user_id)));
+    let r = r#try!(c.get::<EmotesBySet>(&format!("/users/{}/emotes", user_id)));
     Ok(r)
 }
 
@@ -68,7 +68,7 @@ pub fn subscription(
     channel_id: &str,
 ) -> TwitchResult<UserSubFollow> {
     let r =
-        try!(c.get::<UserSubFollow>(&format!("/users/{}/subscriptions/{}", user_id, channel_id)));
+        r#try!(c.get::<UserSubFollow>(&format!("/users/{}/subscriptions/{}", user_id, channel_id)));
     Ok(r)
 }
 
@@ -129,7 +129,7 @@ pub fn follow(
 ) -> TwitchResult<UserSubFollow> {
     let mut data: HashMap<String, bool> = HashMap::new();
     data.insert("notifications".to_owned(), notifications);
-    let r = try!(c.put::<HashMap<String, bool>, UserSubFollow>(
+    let r = r#try!(c.put::<HashMap<String, bool>, UserSubFollow>(
         &format!("/users/{}/follows/channels/{}", user_id, chan_id),
         &data
     ));
@@ -171,7 +171,7 @@ pub fn blocking<'c>(c: &'c TwitchClient, user_id: &str) -> TwitchResult<UserBloc
 /// #### Authentication: `user_blocks_edit`
 ///
 pub fn block(c: &TwitchClient, src_user_id: &str, tgt_user_id: &str) -> TwitchResult<UserBlock> {
-    let r = try!(c.put::<Value, UserBlock>(
+    let r = r#try!(c.put::<Value, UserBlock>(
         &format!("/users/{}/blocks/{}", src_user_id, tgt_user_id),
         &Value::Null
     ));

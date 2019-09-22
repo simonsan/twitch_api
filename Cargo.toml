@@ -1,6 +1,7 @@
 [package]
 name = "twitch_api"
 version = "0.1.2"
+edition = "2018"
 authors = ["Matt Shanker <hatmatteroffact@gmail.com>"]
 description = "Twitch API library"
 repository = "https://github.com/hatmatter/twitch_api"

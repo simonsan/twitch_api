@@ -33,7 +33,7 @@ use std::io::Write;
 /// #### Authentication: `channel_read`
 ///
 pub fn get(c: &TwitchClient) -> TwitchResult<Channel> {
-    let r = try!(c.get::<Channel>("/channel"));
+    let r = r#try!(c.get::<Channel>("/channel"));
     Ok(r)
 }
 
@@ -42,7 +42,7 @@ pub fn get(c: &TwitchClient) -> TwitchResult<Channel> {
 /// #### Authentication: `None`
 ///
 pub fn get_by_id(c: &TwitchClient, chan_id: &str) -> TwitchResult<Channel> {
-    let r = try!(c.get::<Channel>(&format!("/channels/{}", chan_id)));
+    let r = r#try!(c.get::<Channel>(&format!("/channels/{}", chan_id)));
     Ok(r)
 }
 
@@ -51,7 +51,7 @@ pub fn get_by_id(c: &TwitchClient, chan_id: &str) -> TwitchResult<Channel> {
 /// #### Authentication: `channel_read`
 ///
 pub fn editors(c: &TwitchClient, chan_id: &str) -> TwitchResult<ChannelEditors> {
-    let r = try!(c.get::<ChannelEditors>(&format!("/channels/{}/editors", chan_id)));
+    let r = r#try!(c.get::<ChannelEditors>(&format!("/channels/{}/editors", chan_id)));
     Ok(r)
 }
 
@@ -66,10 +66,10 @@ pub fn followers(c: &TwitchClient, chan_id: &str) -> TwitchResult<ChannelFollowe
         follows: Vec::new(),
     };
     let mut r =
-        try!(c.get::<SerdeChannelFollowers>(&format!("/channels/{}/follows?limit=100", chan_id)));
+        r#try!(c.get::<SerdeChannelFollowers>(&format!("/channels/{}/follows?limit=100", chan_id)));
     followers.follows.append(&mut r.follows);
     while let Some(cursor) = r.cursor {
-        r = try!(c.get::<SerdeChannelFollowers>(&format!(
+        r = r#try!(c.get::<SerdeChannelFollowers>(&format!(
             "/channels/{}/follows?cursor={}&limit=100",
             chan_id, cursor
         )));
@@ -83,7 +83,7 @@ pub fn followers(c: &TwitchClient, chan_id: &str) -> TwitchResult<ChannelFollowe
 /// #### Authentication: `None`
 ///
 pub fn teams(c: &TwitchClient, chan_id: &str) -> TwitchResult<ChannelTeams> {
-    let r = try!(c.get::<ChannelTeams>(&format!("/channels/{}/teams", chan_id)));
+    let r = r#try!(c.get::<ChannelTeams>(&format!("/channels/{}/teams", chan_id)));
     Ok(r)
 }
 
@@ -94,13 +94,13 @@ pub fn teams(c: &TwitchClient, chan_id: &str) -> TwitchResult<ChannelTeams> {
 ///
 pub fn subscribers(c: &TwitchClient, chan_id: &str) -> TwitchResult<ChannelSubscribers> {
     let mut subs = Vec::new();
-    let mut r = try!(
+    let mut r = r#try!(
         c.get::<ChannelSubscribers>(&format!("/channels/{}/subscriptions?limit=100", chan_id))
     );
     let mut cnt = r._subscriptions.len();
     subs.append(&mut r._subscriptions);
     while cnt > 0 {
-        r = try!(c.get::<ChannelSubscribers>(&format!(
+        r = r#try!(c.get::<ChannelSubscribers>(&format!(
             "/channels/{}/subscriptions?offset={}&limit=100",
             chan_id,
             subs.len()
@@ -128,7 +128,7 @@ pub fn subscription(
     chan_id: &str,
     user_id: &str,
 ) -> TwitchResult<ChannelSubscription> {
-    let r = try!(
+    let r = r#try!(
         c.get::<ChannelSubscription>(&format!("/channels/{}/subscriptions/{}", chan_id, user_id))
     );
     Ok(r)
@@ -153,7 +153,7 @@ pub fn videos<'c>(c: &'c TwitchClient, chan_id: &str) -> TwitchResult<VideosIter
 /// #### Authentication: `channel_editor`
 ///
 pub fn community(c: &TwitchClient, chan_id: &str) -> TwitchResult<Community> {
-    let r = try!(c.get::<Community>(&format!("/channels/{}/community", chan_id)));
+    let r = r#try!(c.get::<Community>(&format!("/channels/{}/community", chan_id)));
     Ok(r)
 }
 
@@ -162,7 +162,7 @@ pub fn community(c: &TwitchClient, chan_id: &str) -> TwitchResult<Community> {
 /// #### Authentication: `channel_editor`
 ///
 pub fn set_community(c: &TwitchClient, chan_id: &str, community_id: &str) -> TwitchResult<Channel> {
-    let r = try!(c.put::<Value, Channel>(
+    let r = r#try!(c.put::<Value, Channel>(
         &format!("/channels/{}/community/{}", chan_id, community_id),
         &Value::Null
     ));
@@ -195,7 +195,7 @@ pub fn update<'a>(
     }
     let mut settings: HashMap<String, HashMap<String, &str>> = HashMap::new();
     settings.insert("channel".to_owned(), channel);
-    let r = try!(c.put::<HashMap<String, HashMap<String, &str>>, Channel>(
+    let r = r#try!(c.put::<HashMap<String, HashMap<String, &str>>, Channel>(
         &format!("/channels/{}", chan_id),
         &settings
     ));
@@ -224,7 +224,7 @@ pub fn commercial(
     chan_id: &str,
     duration: i32,
 ) -> TwitchResult<CommercialResponse> {
-    let r = try!(c.post::<CommercialDuration, CommercialResponse>(
+    let r = r#try!(c.post::<CommercialDuration, CommercialResponse>(
         &format!("/channels/{}/commercial", chan_id),
         &CommercialDuration { duration: duration }
     ));
@@ -242,7 +242,7 @@ pub fn commercial(
 /// #### Authentication: `channel_stream`
 ///
 pub fn reset_stream_key(c: &TwitchClient, chan_id: &str) -> TwitchResult<Channel> {
-    let r = try!(c.delete::<Channel>(&format!("/channels/{}/stream_key", chan_id)));
+    let r = r#try!(c.delete::<Channel>(&format!("/channels/{}/stream_key", chan_id)));
     Ok(r)
 }
 

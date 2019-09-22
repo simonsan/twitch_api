@@ -33,7 +33,7 @@ use std::io::Write;
 /// #### Authentication: `None`
 ///
 pub fn get_by_name(c: &TwitchClient, name: &str) -> TwitchResult<Community> {
-    let r = try!(c.get::<Community>(&format!("/communities?name={}", name)));
+    let r = r#try!(c.get::<Community>(&format!("/communities?name={}", name)));
     Ok(r)
 }
 
@@ -42,7 +42,7 @@ pub fn get_by_name(c: &TwitchClient, name: &str) -> TwitchResult<Community> {
 /// #### Authentication: `None`
 ///
 pub fn get_by_id(c: &TwitchClient, id: &str) -> TwitchResult<Community> {
-    let r = try!(c.get::<Community>(&format!("/communities/{}", id)));
+    let r = r#try!(c.get::<Community>(&format!("/communities/{}", id)));
     Ok(r)
 }
 
@@ -68,7 +68,7 @@ pub fn update<'a>(
     if let Some(email) = data.email {
         settings.insert("email".to_owned(), email);
     }
-    let r = try!(c.put::<HashMap<String, &str>, Community>(
+    let r = r#try!(c.put::<HashMap<String, &str>, Community>(
         &format!("/communities/{}", community_id),
         &settings
     ));
@@ -94,7 +94,7 @@ pub fn bans<'c>(c: &'c TwitchClient, community_id: &str) -> TwitchResult<Communi
 /// #### Authentication: `communities_moderate`
 ///
 pub fn ban(c: &TwitchClient, community_id: &str, user_id: &str) -> TwitchResult<Value> {
-    let r = try!(c.put::<Value, Value>(
+    let r = r#try!(c.put::<Value, Value>(
         &format!("/communities/{}/bans/{}", community_id, user_id),
         &Value::Null
     ));
@@ -106,7 +106,7 @@ pub fn ban(c: &TwitchClient, community_id: &str, user_id: &str) -> TwitchResult<
 /// #### Authentication: `communities_moderate`
 ///
 pub fn unban(c: &TwitchClient, community_id: &str, user_id: &str) -> TwitchResult<Value> {
-    let r = try!(c.delete::<Value>(&format!("/communities/{}/bans/{}", community_id, user_id)));
+    let r = r#try!(c.delete::<Value>(&format!("/communities/{}/bans/{}", community_id, user_id)));
     Ok(r)
 }
 
@@ -121,7 +121,7 @@ pub fn set_avatar_image(
 ) -> TwitchResult<Value> {
     let mut data: HashMap<String, &str> = HashMap::new();
     data.insert("avatar_image".to_owned(), avatar_img);
-    let r = try!(c.post::<HashMap<String, &str>, Value>(
+    let r = r#try!(c.post::<HashMap<String, &str>, Value>(
         &format!("/communities/{}/images/avatar", community_id),
         &data
     ));
@@ -133,7 +133,7 @@ pub fn set_avatar_image(
 /// #### Authentication: `communities_edit`
 ///
 pub fn delete_avatar_image(c: &TwitchClient, community_id: &str) -> TwitchResult<Value> {
-    let r = try!(c.delete::<Value>(&format!("/communities/{}/images/avatar", community_id)));
+    let r = r#try!(c.delete::<Value>(&format!("/communities/{}/images/avatar", community_id)));
     Ok(r)
 }
 
@@ -148,7 +148,7 @@ pub fn set_cover_image(
 ) -> TwitchResult<Value> {
     let mut data: HashMap<String, &str> = HashMap::new();
     data.insert("cover_image".to_owned(), cover_img);
-    let r = try!(c.post::<HashMap<String, &str>, Value>(
+    let r = r#try!(c.post::<HashMap<String, &str>, Value>(
         &format!("/communities/{}/images/cover", community_id),
         &data
     ));
@@ -160,7 +160,7 @@ pub fn set_cover_image(
 /// #### Authentication: `communities_edit`
 ///
 pub fn delete_cover_image(c: &TwitchClient, community_id: &str) -> TwitchResult<Value> {
-    let r = try!(c.delete::<Value>(&format!("/communities/{}/images/cover", community_id)));
+    let r = r#try!(c.delete::<Value>(&format!("/communities/{}/images/cover", community_id)));
     Ok(r)
 }
 
@@ -169,7 +169,7 @@ pub fn delete_cover_image(c: &TwitchClient, community_id: &str) -> TwitchResult<
 /// #### Authentication: `communities_edit`
 ///
 pub fn moderators(c: &TwitchClient, community_id: &str) -> TwitchResult<Moderators> {
-    let r = try!(c.get::<Moderators>(&format!("/communities/{}/moderators", community_id)));
+    let r = r#try!(c.get::<Moderators>(&format!("/communities/{}/moderators", community_id)));
     Ok(r)
 }
 
@@ -178,7 +178,7 @@ pub fn moderators(c: &TwitchClient, community_id: &str) -> TwitchResult<Moderato
 /// #### Authentication: `communities_edit`
 ///
 pub fn new_moderator(c: &TwitchClient, community_id: &str, user_id: &str) -> TwitchResult<Value> {
-    let r = try!(c.put::<Value, Value>(
+    let r = r#try!(c.put::<Value, Value>(
         &format!("/communities/{}/moderators/{}", community_id, user_id),
         &Value::Null
     ));
@@ -194,7 +194,7 @@ pub fn delete_moderator(
     community_id: &str,
     user_id: &str,
 ) -> TwitchResult<Value> {
-    let r = try!(c.delete::<Value>(&format!(
+    let r = r#try!(c.delete::<Value>(&format!(
         "/communities/{}/moderators/{}",
         community_id, user_id
     )));
@@ -206,8 +206,9 @@ pub fn delete_moderator(
 /// #### Authentication: `Any`
 ///
 pub fn permissions(c: &TwitchClient, community_id: &str) -> TwitchResult<HashMap<String, bool>> {
-    let r =
-        try!(c.get::<HashMap<String, bool>>(&format!("/communities/{}/permissions", community_id)));
+    let r = r#try!(
+        c.get::<HashMap<String, bool>>(&format!("/communities/{}/permissions", community_id))
+    );
     Ok(r)
 }
 
@@ -222,7 +223,7 @@ pub fn report_channel(
 ) -> TwitchResult<Value> {
     let mut data: HashMap<String, &str> = HashMap::new();
     data.insert("channel_id".to_owned(), channel_id);
-    let r = try!(c.post::<HashMap<String, &str>, Value>(
+    let r = r#try!(c.post::<HashMap<String, &str>, Value>(
         &format!("/communities/{}/report_channel", community_id),
         &data
     ));
@@ -259,7 +260,7 @@ pub fn timeout(
     if let Some(reason) = reason {
         data.insert("reason".to_owned(), reason);
     }
-    let r = try!(c.put::<HashMap<String, String>, Value>(
+    let r = r#try!(c.put::<HashMap<String, String>, Value>(
         &format!("/communities/{}/timeouts/{}", community_id, user_id),
         &data
     ));
@@ -271,7 +272,7 @@ pub fn timeout(
 /// #### Authentication: `communities_moderate`
 ///
 pub fn delete_timeout(c: &TwitchClient, community_id: &str, user_id: &str) -> TwitchResult<Value> {
-    let r = try!(c.delete::<Value>(&format!(
+    let r = r#try!(c.delete::<Value>(&format!(
         "/communities/{}/timeouts/{}",
         community_id, user_id
     )));

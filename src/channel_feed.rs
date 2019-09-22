@@ -35,7 +35,7 @@ use std::io::Write;
 /// #### Authentication: *Optional scope: any scope*
 ///
 pub fn get_post(c: &TwitchClient, chan_id: &str, post_id: &str) -> TwitchResult<FeedPost> {
-    let r = try!(c.get::<FeedPost>(&format!("/feed/{}/posts/{}", chan_id, post_id)));
+    let r = r#try!(c.get::<FeedPost>(&format!("/feed/{}/posts/{}", chan_id, post_id)));
     Ok(r)
 }
 
@@ -66,9 +66,9 @@ pub fn get_posts<'c>(c: &'c TwitchClient, chan_id: &str) -> TwitchResult<FeedPos
 /// #### Authentication: `channel_feed_edit`
 ///
 pub fn new_post(c: &TwitchClient, chan_id: &str, data: &str) -> TwitchResult<NewFeedPostResponse> {
-    let r = try!(c.post::<NewContent, NewFeedPostResponse>(
+    let r = r#try!(c.post::<NewContent, NewFeedPostResponse>(
         &format!("/feed/{}/posts", chan_id),
-        &NewContent { content: data }
+        &NewContent { content: data },
     ));
     Ok(r)
 }
@@ -78,7 +78,7 @@ pub fn new_post(c: &TwitchClient, chan_id: &str, data: &str) -> TwitchResult<New
 /// #### Authentication: `channel_feed_edit`
 ///
 pub fn delete_post(c: &TwitchClient, chan_id: &str, post_id: &str) -> TwitchResult<FeedPost> {
-    let r = try!(c.delete::<FeedPost>(&format!("/feed/{}/posts/{}", chan_id, post_id)));
+    let r = r#try!(c.delete::<FeedPost>(&format!("/feed/{}/posts/{}", chan_id, post_id)));
     Ok(r)
 }
 
@@ -96,7 +96,7 @@ pub fn new_post_reaction(
     post_id: &str,
     emote_id: &str,
 ) -> TwitchResult<NewReactionResponse> {
-    let r = try!(c.post::<Value, NewReactionResponse>(
+    let r = r#try!(c.post::<Value, NewReactionResponse>(
         &format!(
             "/feed/{}/posts/{}/reactions?emote_id={}",
             chan_id, post_id, emote_id
@@ -120,7 +120,7 @@ pub fn delete_post_reaction(
     post_id: &str,
     emote_id: &str,
 ) -> TwitchResult<DelReactionResponse> {
-    let r = try!(c.delete::<DelReactionResponse>(&format!(
+    let r = r#try!(c.delete::<DelReactionResponse>(&format!(
         "/feed/{}/posts/{}/reactions?emote_id={}",
         chan_id, post_id, emote_id
     )));
@@ -164,7 +164,7 @@ pub fn new_comment(
     post_id: &str,
     data: &str,
 ) -> TwitchResult<FeedPostComment> {
-    let r = try!(c.post::<NewContent, FeedPostComment>(
+    let r = r#try!(c.post::<NewContent, FeedPostComment>(
         &format!("/feed/{}/posts/{}/comments", chan_id, post_id),
         &NewContent { content: data }
     ));
@@ -181,7 +181,7 @@ pub fn delete_comment(
     post_id: &str,
     comment_id: &str,
 ) -> TwitchResult<FeedPostComment> {
-    let r = try!(c.delete::<FeedPostComment>(&format!(
+    let r = r#try!(c.delete::<FeedPostComment>(&format!(
         "/feed/{}/posts/{}/comments/{}",
         chan_id, post_id, comment_id
     )));
@@ -203,7 +203,7 @@ pub fn new_comment_reaction(
     post_id: &str,
     comment_id: &str,
 ) -> TwitchResult<NewReactionResponse> {
-    let r = try!(c.post::<Value, NewReactionResponse>(
+    let r = r#try!(c.post::<Value, NewReactionResponse>(
         &format!(
             "/feed/{}/posts/{}/comments/{}/reactions?emote_id=endorse",
             chan_id, post_id, comment_id
@@ -228,7 +228,7 @@ pub fn delete_comment_reaction(
     post_id: &str,
     comment_id: &str,
 ) -> TwitchResult<DelReactionResponse> {
-    let r = try!(c.delete::<DelReactionResponse>(&format!(
+    let r = r#try!(c.delete::<DelReactionResponse>(&format!(
         "/feed/{}/posts/{}/comments/{}/reactions?emote_id=endorse",
         chan_id, post_id, comment_id
     )));
