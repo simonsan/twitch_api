@@ -67,23 +67,59 @@ use serde::de::Deserialize;
 use serde::Serialize;
 use std::io::Write;
 use std::io::{stderr, Read};
+use std::env;
+use std::fs;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Credentials {
+    client_id: String,
+    // add when channel_ids are a thing
+    // channel_id: String,
+    token: Option<String>
+}
+
+impl Credentials{
+    pub fn new(cid: String) -> Credentials{
+        Credentials{
+            client_id: cid.clone(),
+            token: None,
+        }
+    }
+
+    pub fn set_from_file(&mut self, file: String){
+        let file_content = fs::read_to_string(file)
+            .expect("Something went wrong with reading file!");
+        match toml::from_str::<Credentials>(&file_content){
+            Ok(cred) => {
+                self.client_id = cred.client_id;
+                self.token = cred.token
+            },
+            Err(e) => panic!("There was a problem opening the toml file: {:?}", e),
+        }
+    }
+
+    pub fn write_to_file(&self, file: String){
+        let content = toml::to_string(self).unwrap();
+        fs::write(file, content)
+            .expect("Coult not write to file");
+    }
+}
 
 #[derive(Debug)]
 pub struct TwitchClient {
     client: Client,
-    cid: String,
-    token: Option<String>,
+    cred: Credentials,
 }
 
 pub fn new(clientid: String) -> TwitchClient {
     TwitchClient {
         client: Client::with_connector(HttpsConnector::new(hyper_rustls::TlsClient::new())),
-        cid: clientid.clone(),
-        token: None,
+        cred: Credentials::new(clientid),
     }
 }
 
 impl TwitchClient {
+
     fn build_request<'a, F>(&self, path: &str, build: F) -> RequestBuilder<'a>
     where
         F: Fn(&str) -> RequestBuilder<'a>,
@@ -91,7 +127,7 @@ impl TwitchClient {
         let url = String::from("https://api.twitch.tv/kraken") + path;
         let mut headers = Headers::new();
 
-        headers.set_raw("Client-ID", vec![self.cid.clone().into_bytes()]);
+        headers.set_raw("Client-ID", vec![self.cred.client_id.clone().into_bytes()]);
         headers.set(Accept(vec![qitem(Mime(
             TopLevel::Application,
             SubLevel::Ext("vnd.twitchtv.v5+json".to_owned()),
@@ -102,7 +138,7 @@ impl TwitchClient {
             SubLevel::Json,
             vec![(Attr::Charset, Value::Utf8)],
         )));
-        if let Some(ref token) = self.token {
+        if let Some(ref token) = self.cred.token {
             headers.set(Authorization(format!("OAuth {}", token)));
         }
 
@@ -110,7 +146,7 @@ impl TwitchClient {
     }
 
     pub fn set_oauth_token(&mut self, token: &str) {
-        self.token = Some(String::from(token));
+        self.cred.token = Some(String::from(token));
     }
 
     pub fn get<T: Deserialize>(&self, path: &str) -> TwitchResult<T> {
@@ -267,7 +303,7 @@ pub mod auth {
             + "?response_type="
             + rtype
             + "&client_id="
-            + &c.cid
+            + &c.cred.client_id
             + "&redirect_uri="
             + redirect_url
             + "&scope="
