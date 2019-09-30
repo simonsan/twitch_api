@@ -87,21 +87,22 @@ impl Credentials{
     }
 
     pub fn set_from_file(&mut self, file: String){
-        let file_content = fs::read_to_string(file)
-            .expect("Something went wrong with reading file!");
+        let file_content = match fs::read_to_string(file){
+            Ok(s) => s,
+            Err(e) => panic!("There was a problem reading the file: {:?}", e)
+        };
         match toml::from_str::<Credentials>(&file_content){
             Ok(cred) => {
                 self.client_id = cred.client_id;
                 self.token = cred.token
             },
-            Err(e) => panic!("There was a problem opening the toml file: {:?}", e),
+            Err(e) => panic!("There was a problem parsing the toml file: {:?}", e),
         }
     }
 
     pub fn write_to_file(&self, file: String){
         let content = toml::to_string(self).unwrap();
-        fs::write(file, content)
-            .expect("Coult not write to file");
+        fs::write(file, content);
     }
 }
 
