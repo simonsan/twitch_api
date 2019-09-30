@@ -102,7 +102,7 @@ impl Credentials{
 
     pub fn write_to_file(&self, file: String){
         let content = toml::to_string(self).unwrap();
-        fs::write(file, content);
+        fs::write(file, content).expect("Error writing toml file");
     }
 }
 
