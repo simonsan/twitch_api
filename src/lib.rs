@@ -144,7 +144,6 @@ impl TwitchClient {
             vec![(Attr::Charset, Value::Utf8)],
         )));
         if let Some(ref token) = self.cred.token {
-        if let Some(ref token) = self.token {
             headers.set(Authorization(format!("OAuth {}", token)));
         }
 
