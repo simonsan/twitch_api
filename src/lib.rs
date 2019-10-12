@@ -70,7 +70,6 @@ use serde::de::Deserialize;
 use serde::Serialize;
 use std::io::Write;
 use std::io::{stderr, Read};
-<<<<<<< HEAD
 use std::env;
 use std::fs;
 
@@ -109,29 +108,18 @@ impl Credentials{
         fs::write(file, content).expect("Error writing toml file");
     }
 }
-=======
->>>>>>> f66632862d34bee9cd6aab9b336a9e5f64789d8a
+
 
 #[derive(Debug)]
 pub struct TwitchClient {
     client: Client,
-<<<<<<< HEAD
     cred: Credentials,
-=======
-    cid: String,
-    token: Option<String>,
->>>>>>> f66632862d34bee9cd6aab9b336a9e5f64789d8a
 }
 
 pub fn new(clientid: String) -> TwitchClient {
     TwitchClient {
         client: Client::with_connector(HttpsConnector::new(hyper_rustls::TlsClient::new())),
-<<<<<<< HEAD
         cred: Credentials::new(clientid),
-=======
-        cid: clientid.clone(),
-        token: None,
->>>>>>> f66632862d34bee9cd6aab9b336a9e5f64789d8a
     }
 }
 
@@ -155,11 +143,8 @@ impl TwitchClient {
             SubLevel::Json,
             vec![(Attr::Charset, Value::Utf8)],
         )));
-<<<<<<< HEAD
         if let Some(ref token) = self.cred.token {
-=======
         if let Some(ref token) = self.token {
->>>>>>> f66632862d34bee9cd6aab9b336a9e5f64789d8a
             headers.set(Authorization(format!("OAuth {}", token)));
         }
 
@@ -324,11 +309,7 @@ pub mod auth {
             + "?response_type="
             + rtype
             + "&client_id="
-<<<<<<< HEAD
             + &c.cred.client_id
-=======
-            + &c.cid
->>>>>>> f66632862d34bee9cd6aab9b336a9e5f64789d8a
             + "&redirect_uri="
             + redirect_url
             + "&scope="
