@@ -1,9 +1,5 @@
-<<<<<<< HEAD
-# Help for this project is highly appreciated
-=======
 # libtwitch-rs [![crates.io version][1]][2] ![GNU AGPLv3][agpl-logo]
 A Rust library for the Twitch API.
->>>>>>> f66632862d34bee9cd6aab9b336a9e5f64789d8a
 
 # Contributing
 Help for this project is highly appreciated. This was built against an older version of the Twitch API. 
