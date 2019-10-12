@@ -1,10 +1,16 @@
+<<<<<<< HEAD
 # Help for this project is highly appreciated
-
-# Note
-This was built against an older version of the Twitch API. Some updates may be necessary to work with the latest version of the API.
-
-# Twitch API library
+=======
+# libtwitch-rs [![crates.io version][1]][2] ![GNU AGPLv3][agpl-logo]
 A Rust library for the Twitch API.
+>>>>>>> f66632862d34bee9cd6aab9b336a9e5f64789d8a
+
+# Contributing
+Help for this project is highly appreciated. This was built against an older version of the Twitch API. 
+Some updates are necessary to work with the latest version of the API. 
+Take a look into the Issues if you want to contribute to the project.
+
+Fork it, implement your changes and make a Pull-Request against the `feature-dev` branch of this repo. 
 
 # Usage
 ```
@@ -28,3 +34,11 @@ if let Some(user) = match users::get(&c) {
     }
 }
 ```
+
+# License
+GNU AGPL-3.0-or-later; see [copying.md](copying.md) and [legal/AGPL-v3](legal/AGPL-v3).
+
+
+[1]: https://img.shields.io/crates/v/libtwitch-rs.svg?style=flat-square
+[2]: https://crates.io/crates/libtwitch-rs
+[agpl-logo]: https://www.gnu.org/graphics/agplv3-88x31.png

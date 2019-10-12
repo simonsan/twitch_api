@@ -1,7 +1,7 @@
+// This file was ((taken|adapted)|contains (data|code)) from twitch_api,
 // Copyright 2017 Matt Shanker
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// It's licensed under the Apache License, Version 2.0.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //     http://www.apache.org/licenses/LICENSE-2.0
@@ -11,6 +11,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+// (Modifications|Other (data|code)|Everything else) Copyright 2019 the libtwitch-rs authors.
+//  See copying.md for further legal info.
 
 //! # Twitch API
 //!
@@ -67,6 +70,7 @@ use serde::de::Deserialize;
 use serde::Serialize;
 use std::io::Write;
 use std::io::{stderr, Read};
+<<<<<<< HEAD
 use std::env;
 use std::fs;
 
@@ -105,17 +109,29 @@ impl Credentials{
         fs::write(file, content).expect("Error writing toml file");
     }
 }
+=======
+>>>>>>> f66632862d34bee9cd6aab9b336a9e5f64789d8a
 
 #[derive(Debug)]
 pub struct TwitchClient {
     client: Client,
+<<<<<<< HEAD
     cred: Credentials,
+=======
+    cid: String,
+    token: Option<String>,
+>>>>>>> f66632862d34bee9cd6aab9b336a9e5f64789d8a
 }
 
 pub fn new(clientid: String) -> TwitchClient {
     TwitchClient {
         client: Client::with_connector(HttpsConnector::new(hyper_rustls::TlsClient::new())),
+<<<<<<< HEAD
         cred: Credentials::new(clientid),
+=======
+        cid: clientid.clone(),
+        token: None,
+>>>>>>> f66632862d34bee9cd6aab9b336a9e5f64789d8a
     }
 }
 
@@ -139,7 +155,11 @@ impl TwitchClient {
             SubLevel::Json,
             vec![(Attr::Charset, Value::Utf8)],
         )));
+<<<<<<< HEAD
         if let Some(ref token) = self.cred.token {
+=======
+        if let Some(ref token) = self.token {
+>>>>>>> f66632862d34bee9cd6aab9b336a9e5f64789d8a
             headers.set(Authorization(format!("OAuth {}", token)));
         }
 
@@ -304,7 +324,11 @@ pub mod auth {
             + "?response_type="
             + rtype
             + "&client_id="
+<<<<<<< HEAD
             + &c.cred.client_id
+=======
+            + &c.cid
+>>>>>>> f66632862d34bee9cd6aab9b336a9e5f64789d8a
             + "&redirect_uri="
             + redirect_url
             + "&scope="

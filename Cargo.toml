@@ -1,14 +1,14 @@
 [package]
-name = "twitch_api"
-version = "0.1.2"
+name = "libtwitch-rs"
+version = "0.1.0"
 edition = "2018"
-authors = ["Matt Shanker <hatmatteroffact@gmail.com>"]
-description = "Twitch API library"
-repository = "https://github.com/hatmatter/twitch_api"
+authors = ["the libtwitch-rs authors"]
+description = "Rust library for the Twitch API"
+repository = "https://github.com/simonsan/libtwitch-rs"
 readme = "README.md"
 keywords = ["twitch", "api"]
 categories = ["api-bindings"]
-license = "Apache-2.0"
+license = "AGPL-3.0"
 
 [dependencies]
 chrono = { version = "0.3", features = ["serde", "rustc-serialize"] }
