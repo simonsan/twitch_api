@@ -72,12 +72,12 @@ pub struct Team {
 	pub id: i64,
 	pub background: Option<String>,
 	pub banner: String,
-	pub created_at: DateTime<UTC>,
+	pub created_at: DateTime<Utc>,
 	pub display_name: String,
 	pub info: String,
 	pub logo: String,
 	pub name: String,
-	pub updated_at: DateTime<UTC>,
+	pub updated_at: DateTime<Utc>,
 	pub users: Option<Vec<User>>,
 }
 

@@ -137,7 +137,7 @@ pub struct Stream {
 	pub video_height: i32,
 	pub average_fps: i32,
 	pub delay: i32,
-	pub created_at: DateTime<UTC>,
+	pub created_at: DateTime<Utc>,
 	pub is_playlist: bool,
 	pub preview: HashMap<String, String>,
 	pub channel: Channel,
