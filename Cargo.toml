@@ -35,7 +35,7 @@ doc = true
 
 [dependencies]
 chrono = { version = "0.3", features = ["serde", "rustc-serialize"] }
-hyper = "0.10.4"
+hyper = "0.13.0"
 hyper-rustls = "0.6.0"
 serde = "0.9"
 serde_json = "0.9"
