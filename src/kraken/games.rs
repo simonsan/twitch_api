@@ -66,6 +66,7 @@ pub struct Game {
 	pub giantbomb_id: i64,
 	pub logo: HashMap<String, String>,
 	pub name: String,
+	#[serde(default)]
 	pub popularity: i32,
 }
 
