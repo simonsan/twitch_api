@@ -91,8 +91,8 @@ use std::{
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Credentials {
-	pub client_id: String,
-	pub token: String,
+	pub client_id: Option<String>,
+	pub token: Option<String>,
 	// pub channel_id: String,
 }
 
@@ -102,8 +102,10 @@ impl Credentials {
 		match file {
 			Some(p) => Credentials::set_from_file(p),
 			None => Credentials {
-				client_id: env::var("TWITCH_CLIENT_ID").unwrap_or_default(),
-				token: env::var("TWITCH_OAUTH_TOKEN").unwrap_or_default(),
+				client_id: Some(
+					env::var("TWITCH_CLIENT_ID").unwrap_or_default(),
+				),
+				token: Some(env::var("TWITCH_OAUTH_TOKEN").unwrap_or_default()),
 			},
 		}
 	}
@@ -152,7 +154,7 @@ pub struct TwitchClient {
 pub fn new(file: String) -> TwitchClient {
 	TwitchClient {
 		client: Client::builder().use_rustls_tls().build().unwrap(),
-		cred: Credentials::new(file),
+		cred: Credentials::new(Option::from(file)),
 	}
 }
 
@@ -177,13 +179,17 @@ impl TwitchClient {
 
 		headers.insert(
 			"Client-ID",
-			HeaderValue::try_from(self.cred.client_id.clone().into_bytes())
-				.unwrap(),
+			HeaderValue::try_from(
+				self.cred.client_id.clone().unwrap().into_bytes(),
+			)
+			.unwrap(),
 		);
 
 		headers.insert(
 			AUTHORIZATION,
-			format!("OAuth {}", self.cred.token).parse().unwrap(),
+			format!("OAuth {}", self.cred.token.clone().unwrap())
+				.parse()
+				.unwrap(),
 		);
 
 		// TODO
