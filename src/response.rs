@@ -15,7 +15,7 @@
 // (Modifications|Other (data|code)|Everything else) Copyright 2019 the
 // libtwitch-rs authors.  See copying.md for further legal info.
 
-extern crate hyper;
+extern crate reqwest;
 extern crate serde_json;
 
 use std::{
@@ -28,15 +28,15 @@ pub type TwitchResult<T> = Result<T, ApiError>;
 
 #[derive(Debug)]
 pub enum ApiError {
-	HyperErr(hyper::error::Error),
+	HyperErr(reqwest::Error),
 	IoError(io::Error),
 	ParseError(serde_json::error::Error),
 	TwitchError(ErrorResponse),
 	EmptyResponse(EmptyResponse),
 }
 
-impl From<hyper::error::Error> for ApiError {
-	fn from(err: hyper::error::Error) -> ApiError {
+impl From<reqwest::Error> for ApiError {
+	fn from(err: reqwest::Error) -> ApiError {
 		ApiError::HyperErr(err)
 	}
 }
@@ -68,7 +68,7 @@ impl ApiError {
 impl Error for ApiError {
 	fn description(&self) -> &str {
 		match *self {
-			ApiError::HyperErr(ref err) => err.to_string(),
+			ApiError::ReqwestErr(ref err) => err.to_string(),
 			ApiError::IoError(ref err) => err.to_string(),
 			ApiError::ParseError(ref err) => err.to_string(),
 			ApiError::TwitchError(ref err) => &err.error,
@@ -79,7 +79,7 @@ impl Error for ApiError {
 
 	fn cause(&self) -> Option<&dyn Error> {
 		Some(match *self {
-			ApiError::HyperErr(ref err) => err as &dyn Error,
+			ApiError::ReqwestErr(ref err) => err as &dyn Error,
 			ApiError::IoError(ref err) => err as &dyn Error,
 			ApiError::ParseError(ref err) => err as &dyn Error,
 			ApiError::TwitchError(ref err) => err as &dyn Error,
@@ -95,7 +95,7 @@ impl fmt::Display for ApiError {
 	) -> fmt::Result
 	{
 		match *self {
-			ApiError::HyperErr(ref err) => fmt::Display::fmt(err, f),
+			ApiError::ReqwestErr(ref err) => fmt::Display::fmt(err, f),
 			ApiError::IoError(ref err) => fmt::Display::fmt(err, f),
 			ApiError::ParseError(ref err) => fmt::Display::fmt(err, f),
 			ApiError::TwitchError(ref err) => fmt::Display::fmt(err, f),

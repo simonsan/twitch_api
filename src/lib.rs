@@ -26,9 +26,10 @@
 //! ```
 //! extern crate libtwitch_rs;
 //!
-//! use libtwitch_rs::kraken::games::*;
+//! use libtwitch_rs::*;
 //!
-//! let c = libtwitch_rs::new("<clientid>".to_owned());
+//! let c = libtwitch_rs::new("<path-to-credential.rs>".to_owned());
+//!
 //! // Print the name of the top 20 games
 //! if let Ok(games) = games::TopGames::get(&c) {
 //! 	for entry in games.take(20) {
@@ -38,8 +39,7 @@
 //! ```
 #![recursion_limit = "512"]
 
-extern crate hyper;
-extern crate hyper_rustls;
+extern crate reqwest;
 
 #[macro_use]
 extern crate serde;
@@ -48,16 +48,21 @@ extern crate serde_json;
 #[macro_use]
 pub mod response;
 pub mod kraken;
-use hyper::{
-	Body,
+
+use reqwest::{
+	header,
+	header::{
+		HeaderMap,
+		HeaderName,
+		HeaderValue,
+		ACCEPT,
+		AUTHORIZATION,
+	},
 	Client,
-	HeaderMap,
-	Method,
-	Request,
-	Response,
-	StatusCode,
-	Uri,
+	Error,
+	RequestBuilder,
 };
+
 use response::{
 	ApiError,
 	ErrorResponse,
@@ -69,6 +74,7 @@ use serde::{
 	Serialize,
 };
 use std::{
+	convert::TryFrom,
 	fs,
 	io::{
 		stderr,
@@ -80,20 +86,24 @@ use std::{
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Credentials {
 	pub client_id: String,
-	// pub channel_id: String,
 	pub token: String,
+	// pub channel_id: String,
 }
 
 impl Credentials {
-	pub fn new(clid: String) -> Credentials {
-		Credentials {
-			client_id: clid,
-			// channel_id: None,
-			token: "".to_string(),
-		}
+	pub fn new(file: String) -> Credentials {
+		Credentials::set_from_file(file)
 	}
 
-	pub fn set_from_file(file: String) -> Credentials {
+	pub fn save(
+		&self,
+		path: String,
+	)
+	{
+		Credentials::write_to_file(&self, path)
+	}
+
+	fn set_from_file(file: String) -> Credentials {
 		let file_content = match fs::read_to_string(file) {
 			Ok(s) => s,
 			Err(e) => panic!("There was a problem reading the file: {:?}", e),
@@ -110,7 +120,7 @@ impl Credentials {
 		}
 	}
 
-	pub fn write_to_file(
+	fn write_to_file(
 		&self,
 		file: String,
 	)
@@ -120,54 +130,57 @@ impl Credentials {
 	}
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct TwitchClient<T> {
-	client: Client<T, hyper::Body>,
+#[derive(Debug)]
+pub struct TwitchClient {
+	client: Client,
 	cred: Credentials,
 }
 
-pub fn new<T>(clientid: String) -> TwitchClient<T> {
+pub fn new(file: String) -> TwitchClient {
 	TwitchClient {
-		client: Client::builder().build(hyper_rustls::HttpsConnector::new()),
-		cred: Credentials::new(clientid),
+		client: Client::builder().use_rustls_tls().build().unwrap(),
+		cred: Credentials::new(file),
 	}
 }
 
-// TODO: Reimplement
-// https://hyper.rs/guides/client/advanced/
 impl TwitchClient {
-	fn build_request<'a, F>(
+	fn build_request<F>(
 		&self,
 		path: &str,
 		build: F,
-	) -> Request<'a>
+	) -> RequestBuilder
 	where
-		F: Fn(&str) -> RequestBuilder<'a>,
+		F: Fn(&str) -> RequestBuilder,
 	{
-		let url = "https://api.twitch.tv/kraken".parse().unwrap() + path;
-		let mut request = Request::builder().uri(url);
+		// This is for the old API v5
+		let root_url = "https://api.twitch.tv/kraken".to_string() + path;
 
 		let mut headers = HeaderMap::new();
 
-		assert!(headers.insert(
+		headers.insert(
+			ACCEPT,
+			"application/vnd.twitchtv.v5+json".parse().unwrap(),
+		);
+
+		headers.insert(
 			"Client-ID",
-			vec![self.cred.client_id.clone().into_bytes()].unwrap()
-		));
+			HeaderValue::try_from(self.cred.client_id.clone().into_bytes())
+				.unwrap(),
+		);
 
-		headers.set(Accept(vec![qitem(Mime(
-			TopLevel::Application,
-			SubLevel::Ext("vnd.twitchtv.v5+json".to_owned()),
-			vec![],
-		))]));
-		headers.set(ContentType(Mime(
-			TopLevel::Application,
-			SubLevel::Json,
-			vec![(Attr::Charset, Value::Utf8)],
-		)));
+		headers.insert(
+			AUTHORIZATION,
+			format!("OAuth {}", self.cred.token).parse().unwrap(),
+		);
 
-		headers.set(Authorization(format!("OAuth {}", self.cred.token)));
+		// TODO
+		// headers.set(ContentType(Mime(
+		// 	TopLevel::Application,
+		// 	SubLevel::Json,
+		// 	vec![(Attr::Charset, Value::Utf8)],
+		// )));
 
-		build(&url).headers(headers)
+		build(&root_url).headers(headers)
 	}
 
 	pub fn set_oauth_token(
