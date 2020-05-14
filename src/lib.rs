@@ -25,7 +25,8 @@
 //!
 //! You can either set the TWITCH_CLIENT_ID, TWITCH_OAUTH_TOKEN environment
 //! variables on your system or pass a path to new() in which you specify the
-//! client-id and oauth token.
+//! client-id and oauth token. You can also set it with
+//! TwitchClient::set_oauth_token().
 //!
 //! ```
 //! extern crate libtwitch_rs;
@@ -53,6 +54,8 @@ extern crate serde_json;
 pub mod response;
 pub mod kraken;
 
+use http::StatusCode;
+
 use reqwest::{
 	header,
 	header::{
@@ -73,6 +76,7 @@ use response::{
 	TwitchResult,
 };
 
+use crate::response::ApiError::HyperErr;
 use serde::{
 	de::Deserialize,
 	Serialize,
@@ -207,7 +211,7 @@ impl TwitchClient {
 		token: &str,
 	)
 	{
-		self.cred.token = String::from(token);
+		self.cred.token = Some(String::from(token));
 	}
 
 	pub async fn get<T: Deserialize<'de>>(
@@ -222,127 +226,110 @@ impl TwitchClient {
 			.json()
 			.await?;
 
-		// TODO
+		assert!(StatusCode::OK.is_success());
 
-		if response {
-			Err(ApiError::empty_response())
+		match r {
+			None => Err(ApiError::empty_response()),
+			Some(T) => Ok(T),
 		}
-		else {
-			match serde_json::from_str(&s) {
-				Ok(x) => Ok(x),
-				Err(err) => {
-					if let Ok(mut e) = serde_json::from_str::<ErrorResponse>(&s)
-					{
-						e.cause = Some(Box::new(err));
-						return Err(ApiError::from(e));
-					}
-					writeln!(&mut stderr(), "Serde Parse Fail:\n\"{}\"", &s)
-						.unwrap();
-					Err(ApiError::from(err))
+	}
+}
+
+pub async fn post<T, R>(
+	&self,
+	path: &str,
+	data: &T,
+) -> TwitchResult<R>
+where
+	T: Serialize,
+	R: Deserialize<'de>,
+{
+	let mut r = self
+		.build_request(path, |url| self.client.post(url))
+		.body(&serde_json::to_string(data)?)
+		.send()
+		.await?;
+	let mut s = String::new();
+	let _ = r.read_to_string(&mut s)?;
+	if s.is_empty() {
+		Err(ApiError::empty_response())
+	}
+	else {
+		match serde_json::from_str(&s) {
+			Ok(x) => Ok(x),
+			Err(err) => {
+				if let Ok(mut e) = serde_json::from_str::<ErrorResponse>(&s) {
+					e.cause = Some(Box::new(err));
+					return Err(ApiError::from(e));
 				}
+				writeln!(&mut stderr(), "Serde Parse Fail:\n\"{}\"", &s)
+					.unwrap();
+				Err(ApiError::from(err))
 			}
 		}
 	}
+}
 
-	pub async fn post<T, R>(
-		&self,
-		path: &str,
-		data: &T,
-	) -> TwitchResult<R>
-	where
-		T: Serialize,
-		R: Deserialize<'de>,
-	{
-		let mut r = self
-			.build_request(path, |url| self.client.post(url))
-			.body(&serde_json::to_string(data)?)
-			.send()
-			.await?;
-		let mut s = String::new();
-		let _ = r.read_to_string(&mut s)?;
-		if s.is_empty() {
-			Err(ApiError::empty_response())
-		}
-		else {
-			match serde_json::from_str(&s) {
-				Ok(x) => Ok(x),
-				Err(err) => {
-					if let Ok(mut e) = serde_json::from_str::<ErrorResponse>(&s)
-					{
-						e.cause = Some(Box::new(err));
-						return Err(ApiError::from(e));
-					}
-					writeln!(&mut stderr(), "Serde Parse Fail:\n\"{}\"", &s)
-						.unwrap();
-					Err(ApiError::from(err))
+pub async fn put<T, R>(
+	&self,
+	path: &str,
+	data: &T,
+) -> TwitchResult<R>
+where
+	T: Serialize,
+	R: Deserialize<'de>,
+{
+	let mut r = self
+		.build_request(path, |url| self.client.put(url))
+		.body(&serde_json::to_string(data)?)
+		.send()
+		.await?;
+	let mut s = String::new();
+	let _ = r.read_to_string(&mut s)?;
+	if s.is_empty() {
+		Err(ApiError::empty_response())
+	}
+	else {
+		match serde_json::from_str(&s) {
+			Ok(x) => Ok(x),
+			Err(err) => {
+				if let Ok(mut e) = serde_json::from_str::<ErrorResponse>(&s) {
+					e.cause = Some(Box::new(err));
+					return Err(ApiError::from(e));
 				}
+				writeln!(&mut stderr(), "Serde Parse Fail:\n\"{}\"", &s)
+					.unwrap();
+				Err(ApiError::from(err))
 			}
 		}
 	}
+}
 
-	pub async fn put<T, R>(
-		&self,
-		path: &str,
-		data: &T,
-	) -> TwitchResult<R>
-	where
-		T: Serialize,
-		R: Deserialize<'de>,
-	{
-		let mut r = self
-			.build_request(path, |url| self.client.put(url))
-			.body(&serde_json::to_string(data)?)
-			.send()
-			.await?;
-		let mut s = String::new();
-		let _ = r.read_to_string(&mut s)?;
-		if s.is_empty() {
-			Err(ApiError::empty_response())
-		}
-		else {
-			match serde_json::from_str(&s) {
-				Ok(x) => Ok(x),
-				Err(err) => {
-					if let Ok(mut e) = serde_json::from_str::<ErrorResponse>(&s)
-					{
-						e.cause = Some(Box::new(err));
-						return Err(ApiError::from(e));
-					}
-					writeln!(&mut stderr(), "Serde Parse Fail:\n\"{}\"", &s)
-						.unwrap();
-					Err(ApiError::from(err))
-				}
-			}
-		}
+pub async fn delete<T: Deserialize<'de>>(
+	&self,
+	path: &str,
+) -> TwitchResult<T>
+{
+	let mut r = self
+		.build_request(path, |url| self.client.delete(url))
+		.send()
+		.await?;
+	let mut s = String::new();
+	let _ = r.read_to_string(&mut s)?;
+	if s.is_empty() {
+		Err(ApiError::empty_response())
 	}
-
-	pub async fn delete<T: Deserialize<'de>>(
-		&self,
-		path: &str,
-	) -> TwitchResult<T>
-	{
-		let mut r = self
-			.build_request(path, |url| self.client.delete(url))
-			.send()
-			.await?;
-		let mut s = String::new();
-		let _ = r.read_to_string(&mut s)?;
-		if s.is_empty() {
-			Err(ApiError::empty_response())
-		}
-		else {
-			match serde_json::from_str(&s) {
-				Ok(x) => Ok(x),
-				Err(err) => {
-					if let Ok(mut e) = serde_json::from_str::<ErrorResponse>(&s)
-					{
-						e.cause = Some(Box::new(err));
-						return Err(ApiError::from(e));
-					}
-					writeln!(&mut stderr(), "Serde Parse Fail:\n\"{}\"", &s)
-						.unwrap();
-					Err(ApiError::from(err))
+	else {
+		match serde_json::from_str(&s) {
+			Ok(x) => Ok(x),
+			Err(err) => {
+				if let Ok(mut e) = serde_json::from_str::<ErrorResponse>(&s) {
+					e.cause = Some(Box::new(err));
+					return Err(ApiError::from(e));
 				}
+				writeln!(&mut stderr(), "Serde Parse Fail:\n\"{}\"", &s)
+					.unwrap();
+				Err(ApiError::from(err))
 			}
 		}
 	}
