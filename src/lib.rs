@@ -23,6 +23,10 @@
 //!
 //! # Examples
 //!
+//! You can either set the TWITCH_CLIENT_ID, TWITCH_OAUTH_TOKEN environment
+//! variables on your system or pass a path to new() in which you specify the
+//! client-id and oauth token.
+//!
 //! ```
 //! extern crate libtwitch_rs;
 //!
@@ -75,6 +79,7 @@ use serde::{
 };
 use std::{
 	convert::TryFrom,
+	env,
 	fs,
 	future,
 	io::{
@@ -92,8 +97,15 @@ pub struct Credentials {
 }
 
 impl Credentials {
-	pub fn new(file: String) -> Credentials {
-		Credentials::set_from_file(file)
+	pub fn new(file: Option<String>) -> Credentials {
+		// if the Environment variables are not set, set it from file
+		match file {
+			Some(p) => Credentials::set_from_file(p),
+			None => Credentials {
+				client_id: env::var("TWITCH_CLIENT_ID").unwrap_or_default(),
+				token: env::var("TWITCH_OAUTH_TOKEN").unwrap_or_default(),
+			},
+		}
 	}
 
 	pub fn save(
@@ -200,12 +212,13 @@ impl TwitchClient {
 		let mut r = self
 			.build_request(path, |url| self.client.get(url.parse().unwrap()))
 			.send()
+			.await?
+			.json()
 			.await?;
-		let response = r.json();
 
 		// TODO
 
-		if response.is_empty() {
+		if response {
 			Err(ApiError::empty_response())
 		}
 		else {
