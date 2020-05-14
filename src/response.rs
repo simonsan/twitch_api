@@ -1,4 +1,4 @@
-// This file was ((taken|adapted)|contains (data|code)) from twitch_api,
+// This file was adapted from twitch_api,
 // Copyright 2017 Matt Shanker
 // It's licensed under the Apache License, Version 2.0.
 // You may not use this file except in compliance with the License.
@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// (Modifications|Other (data|code)|Everything else) Copyright 2019 the
-// libtwitch-rs authors.  See copying.md for further legal info.
+// Modifications Copyright 2020 the libtwitch-rs authors.
+// See copying.md for further legal info.
 
 extern crate reqwest;
 extern crate serde_json;
