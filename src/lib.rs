@@ -48,10 +48,10 @@ extern crate serde_json;
 #[macro_use]
 pub mod response;
 pub mod kraken;
-
 use hyper::{
 	Body,
 	Client,
+	HeaderMap,
 	Method,
 	Request,
 	Response,
@@ -140,18 +140,20 @@ impl TwitchClient {
 		&self,
 		path: &str,
 		build: F,
-	) -> RequestBuilder<'a>
+	) -> Request<'a>
 	where
 		F: Fn(&str) -> RequestBuilder<'a>,
 	{
-		let url = String::from("https://api.twitch.tv/kraken") + path;
-		let mut headers = Headers::new();
+		let url = "https://api.twitch.tv/kraken".parse().unwrap() + path;
+		let mut request = Request::builder().uri(url);
 
-		headers.set_raw("Client-ID", vec![self
-			.cred
-			.client_id
-			.clone()
-			.into_bytes()]);
+		let mut headers = HeaderMap::new();
+
+		assert!(headers.insert(
+			"Client-ID",
+			vec![self.cred.client_id.clone().into_bytes()].unwrap()
+		));
+
 		headers.set(Accept(vec![qitem(Mime(
 			TopLevel::Application,
 			SubLevel::Ext("vnd.twitchtv.v5+json".to_owned()),
