@@ -49,19 +49,19 @@ extern crate serde_json;
 pub mod response;
 pub mod kraken;
 
-use response::{
-	ApiError,
-	ErrorResponse,
-	TwitchResult,
-};
-
 use hyper::{
-	::Builder as RequestBuilder,
 	Body,
 	Client,
 	Method,
 	Request,
 	Response,
+	StatusCode,
+	Uri,
+};
+use response::{
+	ApiError,
+	ErrorResponse,
+	TwitchResult,
 };
 
 use serde::{
@@ -121,13 +121,16 @@ impl Credentials {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct TwitchClient {
-	client: Client<hyper::Body>,
+pub struct TwitchClient<T> {
+	client: Client<T, hyper::Body>,
 	cred: Credentials,
 }
 
-pub fn new(clientid: String) -> TwitchClient {
-	unimplemented!();
+pub fn new<T>(clientid: String) -> TwitchClient<T> {
+	TwitchClient {
+		client: Client::builder().build(hyper_rustls::HttpsConnector::new()),
+		cred: Credentials::new(clientid),
+	}
 }
 
 // TODO: Reimplement
@@ -352,7 +355,7 @@ pub mod auth {
 	}
 
 	fn gen_auth_url(
-		c: &TwitchClient<T>,
+		c: &TwitchClient,
 		rtype: &str,
 		redirect_url: &str,
 		scope: &[Scope],
