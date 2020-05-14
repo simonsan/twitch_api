@@ -76,6 +76,7 @@ use serde::{
 use std::{
 	convert::TryFrom,
 	fs,
+	future,
 	io::{
 		stderr,
 		Read,
@@ -191,17 +192,20 @@ impl TwitchClient {
 		self.cred.token = String::from(token);
 	}
 
-	pub fn get<T: Deserialize<'de>>(
+	pub async fn get<T: Deserialize<'de>>(
 		&self,
 		path: &str,
 	) -> TwitchResult<T>
 	{
 		let mut r = self
 			.build_request(path, |url| self.client.get(url.parse().unwrap()))
-			.send()?;
-		let mut s = String::new();
-		let _ = r.read_to_string(&mut s)?;
-		if s.is_empty() {
+			.send()
+			.await?;
+		let response = r.json();
+
+		// TODO
+
+		if response.is_empty() {
 			Err(ApiError::empty_response())
 		}
 		else {
@@ -221,7 +225,7 @@ impl TwitchClient {
 		}
 	}
 
-	pub fn post<T, R>(
+	pub async fn post<T, R>(
 		&self,
 		path: &str,
 		data: &T,
@@ -233,7 +237,8 @@ impl TwitchClient {
 		let mut r = self
 			.build_request(path, |url| self.client.post(url))
 			.body(&serde_json::to_string(data)?)
-			.send()?;
+			.send()
+			.await?;
 		let mut s = String::new();
 		let _ = r.read_to_string(&mut s)?;
 		if s.is_empty() {
@@ -256,7 +261,7 @@ impl TwitchClient {
 		}
 	}
 
-	pub fn put<T, R>(
+	pub async fn put<T, R>(
 		&self,
 		path: &str,
 		data: &T,
@@ -268,7 +273,8 @@ impl TwitchClient {
 		let mut r = self
 			.build_request(path, |url| self.client.put(url))
 			.body(&serde_json::to_string(data)?)
-			.send()?;
+			.send()
+			.await?;
 		let mut s = String::new();
 		let _ = r.read_to_string(&mut s)?;
 		if s.is_empty() {
@@ -291,14 +297,15 @@ impl TwitchClient {
 		}
 	}
 
-	pub fn delete<T: Deserialize<'de>>(
+	pub async fn delete<T: Deserialize<'de>>(
 		&self,
 		path: &str,
 	) -> TwitchResult<T>
 	{
 		let mut r = self
 			.build_request(path, |url| self.client.delete(url))
-			.send()?;
+			.send()
+			.await?;
 		let mut s = String::new();
 		let _ = r.read_to_string(&mut s)?;
 		if s.is_empty() {
