@@ -1,3 +1,4 @@
+#![feature(in_band_lifetimes)]
 // This file was ((taken|adapted)|contains (data|code)) from twitch_api,
 // Copyright 2017 Matt Shanker
 // It's licensed under the Apache License, Version 2.0.
@@ -37,11 +38,10 @@
 //! ```
 #![recursion_limit = "512"]
 
-#[macro_use]
-extern crate serde_derive;
-
 extern crate hyper;
 extern crate hyper_rustls;
+
+#[macro_use]
 extern crate serde;
 extern crate serde_json;
 
@@ -56,23 +56,12 @@ use response::{
 };
 
 use hyper::{
-	client::RequestBuilder,
-	header::{
-		qitem,
-		Accept,
-		Authorization,
-		ContentType,
-		Headers,
-	},
-	mime::{
-		Attr,
-		Mime,
-		SubLevel,
-		TopLevel,
-		Value,
-	},
-	net::HttpsConnector,
+	::Builder as RequestBuilder,
+	Body,
 	Client,
+	Method,
+	Request,
+	Response,
 };
 
 use serde::{
@@ -131,21 +120,18 @@ impl Credentials {
 	}
 }
 
-#[derive(Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct TwitchClient {
-	client: Client,
+	client: Client<hyper::Body>,
 	cred: Credentials,
 }
 
 pub fn new(clientid: String) -> TwitchClient {
-	TwitchClient {
-		client: Client::with_connector(HttpsConnector::new(
-			hyper_rustls::TlsClient::new(),
-		)),
-		cred: Credentials::new(clientid),
-	}
+	unimplemented!();
 }
 
+// TODO: Reimplement
+// https://hyper.rs/guides/client/advanced/
 impl TwitchClient {
 	fn build_request<'a, F>(
 		&self,
@@ -187,13 +173,13 @@ impl TwitchClient {
 		self.cred.token = String::from(token);
 	}
 
-	pub fn get<T: Deserialize>(
+	pub fn get<T: Deserialize<'de>>(
 		&self,
 		path: &str,
 	) -> TwitchResult<T>
 	{
 		let mut r = self
-			.build_request(path, |url| self.client.get(url))
+			.build_request(path, |url| self.client.get(url.parse().unwrap()))
 			.send()?;
 		let mut s = String::new();
 		let _ = r.read_to_string(&mut s)?;
@@ -224,7 +210,7 @@ impl TwitchClient {
 	) -> TwitchResult<R>
 	where
 		T: Serialize,
-		R: Deserialize,
+		R: Deserialize<'de>,
 	{
 		let mut r = self
 			.build_request(path, |url| self.client.post(url))
@@ -259,7 +245,7 @@ impl TwitchClient {
 	) -> TwitchResult<R>
 	where
 		T: Serialize,
-		R: Deserialize,
+		R: Deserialize<'de>,
 	{
 		let mut r = self
 			.build_request(path, |url| self.client.put(url))
@@ -287,7 +273,7 @@ impl TwitchClient {
 		}
 	}
 
-	pub fn delete<T: Deserialize>(
+	pub fn delete<T: Deserialize<'de>>(
 		&self,
 		path: &str,
 	) -> TwitchResult<T>
@@ -322,6 +308,7 @@ pub mod auth {
 	use std::fmt;
 
 	use super::TwitchClient;
+	use std::fmt::Debug;
 
 	#[derive(Debug)]
 	#[allow(non_camel_case_types)]
@@ -365,7 +352,7 @@ pub mod auth {
 	}
 
 	fn gen_auth_url(
-		c: &TwitchClient,
+		c: &TwitchClient<T>,
 		rtype: &str,
 		redirect_url: &str,
 		scope: &[Scope],

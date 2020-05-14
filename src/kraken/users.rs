@@ -252,7 +252,7 @@ pub struct User {
 	#[serde(rename = "_id")]
 	pub id: i64,
 	pub bio: String,
-	pub created_at: DateTime<UTC>,
+	pub created_at: DateTime<dyn TimeZone<Offset = Utc>>,
 	pub display_name: String,
 	pub email: Option<String>,
 	pub email_verified: Option<bool>,
@@ -261,13 +261,13 @@ pub struct User {
 	pub notifications: Option<UserNotifications>,
 	#[serde(rename = "type")]
 	pub _type: String,
-	updated_at: DateTime<UTC>,
+	updated_at: DateTime<dyn TimeZone<Offset = Utc>>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct UserSubFollow {
 	pub channel: Channel,
-	pub created_at: DateTime<UTC>,
+	pub created_at: DateTime<dyn TimeZone<Offset = Utc>>,
 	pub notifications: bool,
 }
 

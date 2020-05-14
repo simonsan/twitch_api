@@ -16,9 +16,14 @@
 // libtwitch-rs authors.  See copying.md for further legal info.
 
 extern crate chrono;
+extern crate serde;
 extern crate serde_json;
 
 use self::chrono::prelude::*;
+use chrono::{
+	offset::TimeZone,
+	DateTime,
+};
 
 use super::users::User;
 
@@ -269,7 +274,7 @@ pub fn delete_comment_reaction(
 pub struct FeedPost {
 	pub body: String,
 	pub comments: Option<SerdeFeedPostComments>,
-	pub created_at: DateTime<UTC>,
+	pub created_at: DateTime<dyn TimeZone<Offset = Utc>>,
 	pub deleted: Option<bool>,
 	pub embeds: Option<Vec<Value>>,
 	pub emotes: Option<Vec<Value>>,
@@ -312,7 +317,7 @@ pub struct NewFeedPostResponse {
 
 #[derive(Deserialize, Debug)]
 pub struct NewReactionResponse {
-	pub created_at: DateTime<UTC>,
+	pub created_at: DateTime<dyn TimeZone<Offset = Utc>>,
 	pub emote_id: String,
 	pub id: String,
 	pub user: Option<User>,
@@ -364,7 +369,7 @@ pub struct FeedPostCommentIterator<'c> {
 #[derive(Deserialize, Debug)]
 pub struct FeedPostComment {
 	pub body: String,
-	pub created_at: DateTime<UTC>,
+	pub created_at: DateTime<dyn TimeZone<Offset = Utc>>,
 	pub deleted: bool,
 	pub emotes: Vec<FeedPostEmotes>,
 	pub id: String,
@@ -492,7 +497,7 @@ mod tests {
 
 		// count posts
 		match get_posts(&c, CHANID) {
-			Ok(r) => assert!(r.count() == 0),
+			Ok(r) => assert_eq!(r.count(), 0),
 			Err(r) => {
 				println!("{:?}", r);
 				assert!(false);

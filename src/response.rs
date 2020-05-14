@@ -68,12 +68,13 @@ impl ApiError {
 impl Error for ApiError {
 	fn description(&self) -> &str {
 		match *self {
-			ApiError::HyperErr(ref err) => err.description(),
-			ApiError::IoError(ref err) => err.description(),
-			ApiError::ParseError(ref err) => err.description(),
+			ApiError::HyperErr(ref err) => err.to_string(),
+			ApiError::IoError(ref err) => err.to_string(),
+			ApiError::ParseError(ref err) => err.to_string(),
 			ApiError::TwitchError(ref err) => &err.error,
 			ApiError::EmptyResponse(_) => "EmptyResponse",
 		}
+		.as_ref()
 	}
 
 	fn cause(&self) -> Option<&dyn Error> {
@@ -112,7 +113,7 @@ pub struct ErrorResponse {
 	pub status: i32,
 	pub message: String,
 	#[serde(skip_deserializing)]
-	pub cause: Option<Box<Error>>,
+	pub cause: Option<Box<dyn Error>>,
 }
 
 impl fmt::Display for ErrorResponse {

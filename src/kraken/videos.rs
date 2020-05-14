@@ -31,6 +31,7 @@ use super::super::{
 	response::TwitchResult,
 	TwitchClient,
 };
+use std::fmt::Debug;
 
 /// Gets a specified video object
 ///
@@ -93,7 +94,7 @@ pub struct Video {
 	pub broadcast_id: i64,
 	pub broadcast_type: String,
 	pub channel: HashMap<String, String>,
-	pub created_at: DateTime<UTC>,
+	pub created_at: DateTime<dyn TimeZone<Offset = Utc>>,
 	pub description: String,
 	pub description_html: String,
 	pub fps: HashMap<String, f64>,
@@ -102,7 +103,7 @@ pub struct Video {
 	pub length: i32,
 	pub muted_segments: Option<Vec<HashMap<String, i32>>>,
 	pub preview: HashMap<String, String>,
-	pub published_at: DateTime<UTC>,
+	pub published_at: DateTime<dyn TimeZone<Offset = Utc>>,
 	pub resolutions: HashMap<String, String>,
 	pub status: String,
 	pub tag_list: String,
@@ -110,7 +111,7 @@ pub struct Video {
 	pub title: String,
 	pub url: String,
 	pub viewable: String,
-	pub viewable_at: Option<DateTime<UTC>>,
+	pub viewable_at: Option<DateTime<dyn TimeZone<Offset = Utc>>>,
 	pub views: i32,
 }
 
