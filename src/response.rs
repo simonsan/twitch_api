@@ -28,7 +28,7 @@ pub type TwitchResult<T> = Result<T, ApiError>;
 
 #[derive(Debug)]
 pub enum ApiError {
-	HyperErr(reqwest::Error),
+	ReqwestErr(reqwest::Error),
 	IoError(io::Error),
 	ParseError(serde_json::error::Error),
 	TwitchError(ErrorResponse),

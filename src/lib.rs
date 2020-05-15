@@ -76,7 +76,6 @@ use response::{
 	TwitchResult,
 };
 
-use crate::response::ApiError::HyperErr;
 use serde::{
 	de::Deserialize,
 	Serialize,
@@ -105,12 +104,7 @@ impl Credentials {
 		// if the Environment variables are not set, set it from file
 		match file {
 			Some(p) => Credentials::set_from_file(p),
-			None => Credentials {
-				client_id: Some(
-					env::var("TWITCH_CLIENT_ID").unwrap_or_default(),
-				),
-				token: Some(env::var("TWITCH_OAUTH_TOKEN").unwrap_or_default()),
-			},
+			None => Credentials::set_from_env(),
 		}
 	}
 
@@ -139,6 +133,13 @@ impl Credentials {
 		}
 	}
 
+	fn set_from_env() -> Credentials {
+		Credentials {
+			client_id: Some(env::var("TWITCH_CLIENT_ID").unwrap_or_default()),
+			token: Some(env::var("TWITCH_OAUTH_TOKEN").unwrap_or_derault()),
+		}
+	}
+
 	fn write_to_file(
 		&self,
 		file: String,
@@ -155,10 +156,10 @@ pub struct TwitchClient {
 	cred: Credentials,
 }
 
-pub fn new(file: String) -> TwitchClient {
+pub fn new(file: Option<String>) -> TwitchClient {
 	TwitchClient {
-		client: Client::builder().use_rustls_tls().build().unwrap(),
-		cred: Credentials::new(Option::from(file)),
+		client: reqwest::Client::builder().use_rustls_tls().build().unwrap(),
+		cred: Credentials::new(Option::from(file.unwrap())),
 	}
 }
 
@@ -214,123 +215,108 @@ impl TwitchClient {
 		self.cred.token = Some(String::from(token));
 	}
 
-	pub async fn get<T: Deserialize<'de>>(
+	pub async fn get(
 		&self,
 		path: &str,
-	) -> TwitchResult<T>
+	) -> TwitchResult<R>
 	{
-		let mut r = self
-			.build_request(path, |url| self.client.get(url.parse().unwrap()))
+		let response = self
+			.client
+			.build_request(path, url)
+			.get()
 			.send()
 			.await?
 			.json()
 			.await?;
 
+		// TODO: Handle other status codes gracefully
 		assert!(StatusCode::OK.is_success());
 
-		match r {
+		match response {
 			None => Err(ApiError::empty_response()),
-			Some(T) => Ok(T),
+			Some(R) => Ok(R),
 		}
 	}
-}
 
-pub async fn post<T, R>(
-	&self,
-	path: &str,
-	data: &T,
-) -> TwitchResult<R>
-where
-	T: Serialize,
-	R: Deserialize<'de>,
-{
-	let mut r = self
-		.build_request(path, |url| self.client.post(url))
-		.body(&serde_json::to_string(data)?)
-		.send()
-		.await?;
-	let mut s = String::new();
-	let _ = r.read_to_string(&mut s)?;
-	if s.is_empty() {
-		Err(ApiError::empty_response())
-	}
-	else {
-		match serde_json::from_str(&s) {
-			Ok(x) => Ok(x),
-			Err(err) => {
-				if let Ok(mut e) = serde_json::from_str::<ErrorResponse>(&s) {
-					e.cause = Some(Box::new(err));
-					return Err(ApiError::from(e));
-				}
-				writeln!(&mut stderr(), "Serde Parse Fail:\n\"{}\"", &s)
-					.unwrap();
-				Err(ApiError::from(err))
-			}
+	pub async fn post<T>(
+		&self,
+		path: &str,
+		data: &T,
+	) -> TwitchResult<R>
+	where
+		T: Serialize,
+	{
+		let response = self
+			.client
+			.build_request(path, url)
+			.post()
+			.json(data)
+			.send()
+			.await?
+			.json()
+			.await?;
+
+		// TODO: Handle other status codes gracefully
+		assert!(StatusCode::OK.is_success());
+
+		match response {
+			None => Err(ApiError::empty_response()),
+			Some(R) => Ok(R),
 		}
 	}
-}
 
-pub async fn put<T, R>(
-	&self,
-	path: &str,
-	data: &T,
-) -> TwitchResult<R>
-where
-	T: Serialize,
-	R: Deserialize<'de>,
-{
-	let mut r = self
-		.build_request(path, |url| self.client.put(url))
-		.body(&serde_json::to_string(data)?)
-		.send()
-		.await?;
-	let mut s = String::new();
-	let _ = r.read_to_string(&mut s)?;
-	if s.is_empty() {
-		Err(ApiError::empty_response())
-	}
-	else {
-		match serde_json::from_str(&s) {
-			Ok(x) => Ok(x),
-			Err(err) => {
-				if let Ok(mut e) = serde_json::from_str::<ErrorResponse>(&s) {
-					e.cause = Some(Box::new(err));
-					return Err(ApiError::from(e));
-				}
-				writeln!(&mut stderr(), "Serde Parse Fail:\n\"{}\"", &s)
-					.unwrap();
-				Err(ApiError::from(err))
-			}
+	pub async fn put<T>(
+		&self,
+		path: &str,
+		data: &T,
+	) -> TwitchResult<R>
+	where
+		T: Serialize,
+	{
+		let response = self
+			.client
+			.build_request(path, url)
+			.put()
+			.json(data)
+			.send()
+			.await?
+			.json()
+			.await?;
+
+		// TODO: Handle other status codes gracefully
+		assert!(StatusCode::OK.is_success());
+
+		match response {
+			None => Err(ApiError::empty_response()),
+			Some(R) => Ok(R),
 		}
 	}
-}
 
-pub async fn delete<T: Deserialize<'de>>(
-	&self,
-	path: &str,
-) -> TwitchResult<T>
-{
-	let mut r = self
-		.build_request(path, |url| self.client.delete(url))
-		.send()
-		.await?;
-	let mut s = String::new();
-	let _ = r.read_to_string(&mut s)?;
-	if s.is_empty() {
-		Err(ApiError::empty_response())
-	}
-	else {
-		match serde_json::from_str(&s) {
-			Ok(x) => Ok(x),
-			Err(err) => {
-				if let Ok(mut e) = serde_json::from_str::<ErrorResponse>(&s) {
-					e.cause = Some(Box::new(err));
-					return Err(ApiError::from(e));
-				}
-				writeln!(&mut stderr(), "Serde Parse Fail:\n\"{}\"", &s)
-					.unwrap();
-				Err(ApiError::from(err))
-			}
+	pub async fn delete<T>(
+		&self,
+		path: &str,
+		data: &T,
+	) -> TwitchResult<R>
+	where
+		T: Serialize,
+	{
+		// TODO: delete implement
+		let response = self
+			.client
+			.build_request(path, url)
+			.put()
+			.json(data)
+			.send()
+			.await?
+			.json()
+			.await?;
+
+		// TODO: Handle other status codes gracefully
+		assert!(StatusCode::OK.is_success());
+
+		match response {
+			None => Err(ApiError::empty_response()),
+			Some(R) => Ok(R),
 		}
 	}
 }
