@@ -30,7 +30,7 @@ pub fn get_badges(
 	chan_id: &str,
 ) -> TwitchResult<BadgeSet>
 {
-	let r = c.get::<BadgeSet>(&format!("/chat/{}/badges", chan_id))?;
+	let r = c.get::<BadgeSet>(&format!("/chat/{}/badges", chan_id));
 	Ok(r)
 }
 

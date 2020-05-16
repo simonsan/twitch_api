@@ -136,7 +136,7 @@ impl Credentials {
 	fn set_from_env() -> Credentials {
 		Credentials {
 			client_id: Some(env::var("TWITCH_CLIENT_ID").unwrap_or_default()),
-			token: Some(env::var("TWITCH_OAUTH_TOKEN").unwrap_or_derault()),
+			token: Some(env::var("TWITCH_OAUTH_TOKEN").unwrap_or_default()),
 		}
 	}
 
@@ -215,19 +215,17 @@ impl TwitchClient {
 		self.cred.token = Some(String::from(token));
 	}
 
-	pub async fn get(
+	pub fn get<R>(
 		&self,
 		path: &str,
 	) -> TwitchResult<R>
 	{
 		let response = self
-			.client
-			.build_request(path, url)
-			.get()
-			.send()
-			.await?
-			.json()
-			.await?;
+			.build_request(path, |url| self.get(path, url))
+			.send();
+
+
+			let r = response.json();
 
 		// TODO: Handle other status codes gracefully
 		assert!(StatusCode::OK.is_success());
@@ -238,7 +236,7 @@ impl TwitchClient {
 		}
 	}
 
-	pub async fn post<T>(
+	pub fn post<T>(
 		&self,
 		path: &str,
 		data: &T,
@@ -248,8 +246,7 @@ impl TwitchClient {
 	{
 		let response = self
 			.client
-			.build_request(path, url)
-			.post()
+			.build_request(path, |url| self.post(path, url))
 			.json(data)
 			.send()
 			.await?
@@ -265,7 +262,7 @@ impl TwitchClient {
 		}
 	}
 
-	pub async fn put<T>(
+	pub fn put<T>(
 		&self,
 		path: &str,
 		data: &T,
@@ -275,8 +272,7 @@ impl TwitchClient {
 	{
 		let response = self
 			.client
-			.build_request(path, url)
-			.put()
+			.build_request(path, |url| self.put(path, url))
 			.json(data)
 			.send()
 			.await?
@@ -292,7 +288,7 @@ impl TwitchClient {
 		}
 	}
 
-	pub async fn delete<T>(
+	pub fn delete<T>(
 		&self,
 		path: &str,
 		data: &T,
@@ -303,8 +299,7 @@ impl TwitchClient {
 		// TODO: delete implement
 		let response = self
 			.client
-			.build_request(path, url)
-			.put()
+			.build_request(path, |url| self.delete(path, url))
 			.json(data)
 			.send()
 			.await?
