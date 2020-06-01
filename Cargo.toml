@@ -37,7 +37,7 @@ doc = true
 chrono = { version = "~0.3", features = ["serde", "rustc-serialize"] }
 hyper = "~0.10"
 hyper-rustls = "~0.6"
-serde = "~0.9"
+serde = "~1.0"
 serde_json = "~0.9"
 serde_derive = "~0.9"
 toml = "~0.3"
