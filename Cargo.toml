@@ -34,7 +34,7 @@ test = true
 doc = true
 
 [dependencies]
-chrono = { version = "~0.3", features = ["serde", "rustc-serialize"] }
+chrono = { version = "~0.4", features = ["serde", "rustc-serialize"] }
 hyper = "~0.10"
 hyper-rustls = "~0.6"
 serde = "~0.9"
