@@ -15,75 +15,72 @@
 // (Modifications|Other (data|code)|Everything else) Copyright 2019 the
 // libtwitch-rs authors.  See copying.md for further legal info.
 
-extern crate chrono;
-extern crate serde_json;
-
 use std::{
-	self,
-	collections::HashMap,
-	io::Write,
+    self,
+    collections::HashMap,
+    io::Write,
 };
 
 use serde::Deserialize;
 
 use super::super::{
-	response::TwitchResult,
-	TwitchClient,
+    response::TwitchResult,
+    TwitchClient,
 };
 
 /// Gets games sorted by number of current viewers on Twitch, most popular first
 ///
 /// #### Authentication: `None`
 pub fn top(c: &TwitchClient) -> TwitchResult<TopGames> {
-	let iter = TopGames {
-		client: c,
-		cur: None,
-		offset: 0,
-	};
-	Ok(iter)
+    let iter = TopGames {
+        client: c,
+        cur: None,
+        offset: 0,
+    };
+    Ok(iter)
 }
 
 ///////////////////////////////////////
 // GetTopGames
 ///////////////////////////////////////
 pub struct TopGames<'c> {
-	client: &'c TwitchClient,
-	cur: Option<SerdeTopGames>,
-	offset: i32,
+    client: &'c TwitchClient,
+    cur: Option<SerdeTopGames>,
+    offset: i32,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct TopGame {
-	pub channels: i32,
-	pub viewers: i32,
-	pub game: Game,
+    pub channels: i32,
+    pub viewers: i32,
+    pub game: Game,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct Game {
-	#[serde(rename = "_id")]
-	pub id: i64,
-	#[serde(rename = "box")]
-	pub _box: HashMap<String, String>,
-	pub giantbomb_id: i64,
-	pub logo: HashMap<String, String>,
-	pub name: String,
-	#[serde(default)]
-	pub popularity: i32,
+    #[serde(rename = "_id")]
+    pub id: i64,
+    #[serde(rename = "box")]
+    pub _box: HashMap<String, String>,
+    pub giantbomb_id: i64,
+    pub logo: HashMap<String, String>,
+    pub name: String,
+    #[serde(default)]
+    pub popularity: i32,
 }
 
 #[derive(Deserialize, Debug)]
 struct SerdeTopGames {
-	top: Vec<TopGame>,
+    top: Vec<TopGame>,
 }
 
 impl<'c> Iterator for TopGames<'c> {
-	type Item = TopGame;
+    type Item = TopGame;
 
-	fn next(&mut self) -> Option<TopGame> {
-		let url = &format!("/games/top?limit=100&offset={}", self.offset);
-		next_result!(self, &url, SerdeTopGames, top)
-	}
+    fn next(&mut self) -> Option<TopGame> {
+        let url = &format!("/games/top?limit=100&offset={}", self.offset);
+        next_result!(self, &url, SerdeTopGames, top)
+    }
 }
 
 ///////////////////////////////////////
@@ -92,15 +89,15 @@ impl<'c> Iterator for TopGames<'c> {
 
 #[cfg(test)]
 mod tests {
-	use crate::{
-		new,
-		tests::CLIENTID,
-	};
+    use crate::{
+        new,
+        tests::CLIENTID,
+    };
 
-	#[test]
-	fn top() {
-		let c = new(String::from(CLIENTID));
-		let mut r = super::top(&c).unwrap();
-		r.next();
-	}
+    #[test]
+    fn top() {
+        let c = new(String::from(CLIENTID));
+        let mut r = super::top(&c).unwrap();
+        r.next();
+    }
 }

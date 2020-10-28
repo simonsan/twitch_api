@@ -3,14 +3,14 @@ name = "libtwitch-rs"
 version = "0.1.2"
 edition = "2018"
 authors = ["the libtwitch-rs authors"]
-description = "Rust library for the Twitch API"
+description = "Rust library for the Twitch APIv5 (Kraken)"
 repository = "https://github.com/simonsan/libtwitch-rs"
 documentation = "https://docs.rs/libtwitch-rs/"
 readme = "README.md"
 keywords = ["twitch", "api"]
 categories = ["api-bindings"]
 license = "AGPL-3.0-or-later"
-maintenance = { status = "actively-developed" }
+
 
 include = [
     "src/**/*",
@@ -35,8 +35,7 @@ doc = true
 
 [dependencies]
 chrono = { version = "0.4", features = ["serde", "rustc-serialize"] }
-hyper = "0.10"
-hyper-rustls = "0.6"
+reqwest = { version = "0.10", features = ["blocking", "json", "rustls-tls"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 toml = "0.5"
@@ -51,3 +50,38 @@ pretty_assertions = "0.6"
 upload-doc = true
 no-dev-version = true
 pre-release-commit-message = "Release {{crate_name}} {{version}} / {{date}}"
+
+[badges]
+maintenance = { status = "actively-developed" }
+
+[profile.dev]
+opt-level=0
+debug = true
+rpath = false
+lto = false
+debug-assertions = true
+codegen-units = 4
+
+[profile.release]
+opt-level=3
+debug = false
+rpath = false
+lto = true
+debug-assertions = false
+codegen-units = 1
+
+[profile.test]
+opt-level = 1
+debug = true
+rpath = false
+lto = false
+debug-assertions = true
+codegen-units = 4
+
+[profile.bench]
+opt-level = 3
+debug = false
+rpath = false
+lto = true
+debug-assertions = false
+codegen-units = 1

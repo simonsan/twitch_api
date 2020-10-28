@@ -20,9 +20,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reorganize APIv5
 - Changed crate type
 - Adopting GH actions to nightly toolchain as well
+- Replaced hyper/hyper-rustls with reqwest crate
 
 ## Removed
 - Used thiserror and removed removed self-written Error trait implements
+- removed outdated "extern crate" due to 2018 edition 
 
 ## [0.1.2] - 2019-10-16
 ### Added

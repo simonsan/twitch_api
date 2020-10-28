@@ -33,23 +33,23 @@ jobs:
         with:
           command: check
 
-  test:
-    name: Test Suite
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v2
+  # test:
+  #   name: Test Suite
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout sources
+  #       uses: actions/checkout@v2
 
-      - name: Install nightly toolchain
-        uses: actions-rs/toolchain@v1.0.6
-        with:
-          toolchain: nightly
-          override: true
+  #     - name: Install nightly toolchain
+  #       uses: actions-rs/toolchain@v1.0.6
+  #       with:
+  #         toolchain: nightly
+  #         override: true
 
-      - name: Run cargo test
-        uses: actions-rs/cargo@v1.0.1
-        with:
-          command: test
+  #     - name: Run cargo test
+  #       uses: actions-rs/cargo@v1.0.1
+  #       with:
+  #         command: test
 
   fmt:
     name: Rustfmt
@@ -121,10 +121,10 @@ jobs:
         with:
           command: check
     
-      - name: Run cargo test
-        uses: actions-rs/cargo@v1.0.1
-        with:
-          command: test
+      # - name: Run cargo test
+      #   uses: actions-rs/cargo@v1.0.1
+      #   with:
+      #     command: test
 
       - name: Run cargo clippy
         uses: actions-rs/cargo@v1.0.1
