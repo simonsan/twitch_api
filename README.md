@@ -1,9 +1,8 @@
 # libtwitch-rs [![crates.io version][1]][2] ![GNU AGPLv3][agpl-logo]
-A Rust library for the Twitch API.
+A Rust library for the Twitch APIv5 (Kraken).
 
 # Contributing
-Help for this project is highly appreciated. This was built against an older version of the Twitch API. 
-Some updates are necessary to work with the latest version of the API. 
+Help for this project is highly appreciated. This was built against Twitch APIv5 (Kraken). 
 Take a look into the [issues](https://github.com/simonsan/libtwitch-rs/issues) if you want to contribute to the project.
 
 Fork it, implement your changes and make a Pull-Request against the `feature-dev` branch of this repo. 

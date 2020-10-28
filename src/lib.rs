@@ -141,7 +141,7 @@ impl TwitchClient {
         let mut headers = HeaderMap::new();
 
         headers.insert(
-            HeaderName::from_static("CLIENT-ID"),
+            HeaderName::from_lowercase(b"client-id").unwrap(),
             HeaderValue::from_str(&cid).unwrap(),
         );
         headers.insert(
@@ -344,8 +344,7 @@ pub mod auth {
 #[macro_use]
 extern crate pretty_assertions;
 
-#[allow(dead_code)]
-mod tests {
-
-    include!("../credentials.rs");
-}
+// #[allow(dead_code)]
+// mod tests {
+//     include!("../credentials.rs");
+// }
