@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 
 ## [Unreleased] - ReleaseDate
+## Changed
+- Changed license from AGPLv3 to LGPLv3
 
 ## [0.2.0] - 2020-10-28
 ## Fixed

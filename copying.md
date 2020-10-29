@@ -1,8 +1,8 @@
 Any file in this project that doesn't state otherwise, and isn't listed as an
-exception below, is Copyright 2019-2019 libtwitch-rs authors, and licensed
-under the terms of the GNU Affero General Public License Version 3, or
-(at your option) any later version ("AGPL3+").
-A copy of the license can be found in [legal/AGPL-v3](/legal/AGPL-v3).
+exception below, is Copyright 2019-2020 libtwitch-rs authors, and licensed
+under the terms of the GNU Lesser General Public License Version 3, or
+(at your option) any later version ("LGPL3+").
+A copy of the license can be found in [legal/LGPL-v3](/legal/LGPL-v3).
 
 _the libtwitch-rs authors_ are:
 
@@ -20,7 +20,7 @@ just for legal reasons, but also to keep an overview of all those nicknames.
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Affero General Public License Version 3 for more details.
+GNU Lesser General Public License Version 3 for more details.
 
 If you wish to include a file from libtwitch-rs in your project, make sure to
 include all required legal info. The easiest way to do this would probably
@@ -47,7 +47,7 @@ source projects, require the following, longer header:
 
     This file was ((taken|adapted)|contains (data|code)) from $PROJECT,
     Copyright 1337-2013 copyright owners name.
-    It's licensed under the terms of the 3-clause BSD license.
+    It's licensed under the terms of the $LICENSE.
     < any amount of lines of further legal information required by $PROJECT,
       such as a reference to a copy of the $PROJECT's README or AUTHORS file >
     < if third-party files from more than the one project were used in this

@@ -1,4 +1,4 @@
-# libtwitch-rs [![docs.rs][5]][6] [![crates.io version][1]][2] [![dependency status][3]][4] ![GNU AGPLv3][agpl-logo]
+# libtwitch-rs [![docs.rs][5]][6] [![crates.io version][1]][2] [![dependency status][3]][4] ![GNU LGPLv3][lgpl-logo]
 A Rust library for the Twitch APIv5 (Kraken).
 
 # Contributing
@@ -75,7 +75,7 @@ Webhooks          | :heavy_minus_sign: |
 
 
 # License
-GNU AGPL-3.0-or-later; see [copying.md](copying.md) and [legal/AGPL-v3](legal/AGPL-v3).
+GNU LGPL-3.0-or-later; see [copying.md](copying.md) and [legal/LGPL-v3](legal/LGPL-v3).
 
 
 [1]: https://img.shields.io/crates/v/libtwitch-rs.svg?style=flat-square
@@ -84,4 +84,4 @@ GNU AGPL-3.0-or-later; see [copying.md](copying.md) and [legal/AGPL-v3](legal/AG
 [4]: https://deps.rs/repo/github/age-rs/libtwitch-rs
 [5]: https://docs.rs/libtwitch-rs/badge.svg
 [6]: https://docs.rs/libtwitch-rs/latest/
-[agpl-logo]: https://www.gnu.org/graphics/agplv3-88x31.png
+[lgpl-logo]: https://www.gnu.org/graphics/lgplv3-88x31.png
