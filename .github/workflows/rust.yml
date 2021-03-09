@@ -28,6 +28,9 @@ jobs:
           toolchain: nightly
           override: true
 
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v1
+
       - name: Run cargo check
         uses: actions-rs/cargo@v1.0.1
         with:
@@ -66,6 +69,9 @@ jobs:
           override: true
           components: rustfmt
 
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v1
+
       - name: Run cargo fmt
         uses: actions-rs/cargo@v1.0.1
         with:
@@ -87,6 +93,9 @@ jobs:
           override: true
           components: clippy
 
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v1
+
       - name: Run cargo clippy
         uses: actions-rs/cargo@v1.0.1
         with:
@@ -101,36 +110,37 @@ jobs:
       - name: Build
         run: cargo build --verbose
 
-  merge:
-    name: Merge
+  coverage:
+    name: Code coverage
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout sources
+      - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Install nightly toolchain
-        uses: actions-rs/toolchain@v1.0.6
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
         with:
+          toolchain: stable
           profile: minimal
-          toolchain: nightly
           override: true
-          components: clippy
-          
-      - name: Cargo check
-        uses: actions-rs/cargo@v1.0.1
-        with:
-          command: check
-    
-      # - name: Run cargo test
-      #   uses: actions-rs/cargo@v1.0.1
-      #   with:
-      #     command: test
 
-      - name: Run cargo clippy
-        uses: actions-rs/cargo@v1.0.1
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v1
+
+      - name: Run cargo-tarpaulin
+        uses: actions-rs/tarpaulin@v0.1
         with:
-          command: clippy
-          args: -- -D warnings
-              
-      - name: Build
-        run: cargo build --verbose
+          args: '--ignore-tests'
+
+
+
+  merge:
+    name: Merge
+    needs: [check, fmt, clippy, build, coverage]
+    runs-on: ubuntu-latest
+    steps:
+      - name: "True"
+        run: |
+          echo "::set-output ${{ true }}"
+
+
