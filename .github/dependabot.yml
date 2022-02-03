@@ -1,0 +1,17 @@
+version: 2
+updates:
+- package-ecosystem: cargo
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  allow:
+  - dependency-type: direct
+  - dependency-type: indirect
+  ignore:
+  - dependency-name: hyper
+    versions:
+    - "> 0.10.0"
+  - dependency-name: hyper-rustls
+    versions:
+    - "> 0.6.0"
