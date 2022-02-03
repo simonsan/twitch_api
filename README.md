@@ -1,4 +1,13 @@
-# libtwitch-rs [![docs.rs][5]][6] [![crates.io version][1]][2] [![dependency status][3]][4] ![GNU LGPLv3][lgpl-logo]
+
+# Archived
+  
+  
+      The Twitch v5 API is scheduled to be shutdown at the end of February 
+      2022.
+    
+
+
+## libtwitch-rs [![docs.rs][5]][6] [![crates.io version][1]][2] [![dependency status][3]][4] ![GNU LGPLv3][lgpl-logo]
 A Rust library for the Twitch APIv5 (Kraken).
 
 # Contributing
